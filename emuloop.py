@@ -2,6 +2,7 @@ from genie_python.genie_script_generator import ActionDefinition, cast_parameter
 from genie_python import genie as g
 from importlib import import_module
 import numpy as np
+import math
 
 # Allow the user to right keep in temp or field to use the current value
 def float_or_keep(temp_or_field):
@@ -30,7 +31,8 @@ def cast_custom_expression(expression):
 
 class DoRun(ActionDefinition):
 
-    possible_magnet_devices = ["Active ZF", "Danfysik", "T20 Coils"]
+    active_zf = "Active ZF"
+    possible_magnet_devices = [active_zf, "Danfysik", "T20 Coils"]
 
 
     # Loop through a set of temperatures or fields using a start, stop and step mechanism
@@ -63,8 +65,8 @@ class DoRun(ActionDefinition):
             # Evaluate the user command before scanning
             eval(custom)
             # When we are scanning both temperature and field do all combinations
-            for temp in np.linspace(start_temperature, stop_temperature, step_temperature):
-                for field in np.linspace(start_field, stop_field, step_field):
+            for temp in range(start_temperature, stop_temperature+0.00001, step_temperature):
+                for field in range(start_field, stop_field+0.00001, step_field):
                     inst.set_mag(field, wait=True)
                     inst.set_temp(temp, wait=True)
                     # Do a run for this mag and temp
@@ -75,7 +77,7 @@ class DoRun(ActionDefinition):
             # Evaluate the user command before scanning
             eval(custom)
             # Scan through temps
-            for temp in np.linspace(start_temperature, stop_temperature, step_temperature):
+            for temp in range(start_temperature, stop_temperature+0.00001, step_temperature):
                 inst.set_temp(temp, wait=True)
                 # Do a run for this temp
                 g.begin(quiet=True)
@@ -85,7 +87,7 @@ class DoRun(ActionDefinition):
             # Evaluate the user command before scanning
             eval(custom)
             # Scan through fields
-            for field in np.linspace(start_field, stop_field, step_field):
+            for field in range(start_field, stop_field+0.00001, step_field):
                 inst.set_mag(field, wait=True)
                 # Do a run for this temp
                 g.begin(quiet=True)
@@ -120,12 +122,19 @@ class DoRun(ActionDefinition):
             # We need to step thorugh at some rate
             if start_temperature != stop_temperature and step_temperature == 0.0:
                 reason += "Cannot step through temperatures when step is zero\n"
+            if start_temperature == stop_temperature and step_temperature != 0.0:
+                reason += "You will be setting the temperature to {} {} times\n".format(start_temperature, step_temperature)
         if is_field_scan_defined:
              # If we are defining a field scan we need to set the magnet
             if magnet_device not in magnet_devices.values():
                 reason += "Field set but magnet devices {} not in possible devices {}\n".format(magnet_device, list(magnet_devices.keys()))
             if start_field != stop_field and stop_field == 0.0:
                 reason += "Cannot step through fields when step is zero\n"
+            if start_field == stop_field and step_field != 0.0:
+                reason += "You will be setting the field to {} {} times\n".format(start_field, step_field)
+            # Only the zero field can set a field of zero
+            if math.isclose(start_field, 0.0) or math.isclose(stop_field, 0.0) and magnet_device != self.active_zf:
+                reason += "Trying to set a zero field without using the active zero field (ZF)\n"
         # If there is no reason return None i.e. the parameters are valid
         if reason != "":
             return reason
