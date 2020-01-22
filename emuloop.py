@@ -65,8 +65,8 @@ class DoRun(ActionDefinition):
             # Evaluate the user command before scanning
             eval(custom)
             # When we are scanning both temperature and field do all combinations
-            for temp in range(start_temperature, stop_temperature+0.00001, step_temperature):
-                for field in range(start_field, stop_field+0.00001, step_field):
+            for temp in np.arange(start_temperature, stop_temperature+0.00001, step_temperature):
+                for field in np.arange(start_field, stop_field+0.00001, step_field):
                     inst.set_mag(field, wait=True)
                     inst.set_temp(temp, wait=True)
                     # Do a run for this mag and temp
@@ -77,7 +77,7 @@ class DoRun(ActionDefinition):
             # Evaluate the user command before scanning
             eval(custom)
             # Scan through temps
-            for temp in range(start_temperature, stop_temperature+0.00001, step_temperature):
+            for temp in np.arange(start_temperature, stop_temperature+0.00001, step_temperature):
                 inst.set_temp(temp, wait=True)
                 # Do a run for this temp
                 g.begin(quiet=True)
@@ -87,12 +87,16 @@ class DoRun(ActionDefinition):
             # Evaluate the user command before scanning
             eval(custom)
             # Scan through fields
-            for field in range(start_field, stop_field+0.00001, step_field):
+            for field in np.arange(start_field, stop_field+0.00001, step_field):
                 inst.set_mag(field, wait=True)
                 # Do a run for this temp
                 g.begin(quiet=True)
                 g.waitfor_mevents(mevents)
                 g.end(quiet=True)
+        else:
+            g.begin(quiet=True)
+            g.waitfor_mevents(mevents)
+            g.end(quiet=True)
 
 
     # Check to see if the provided parameters are valid
@@ -112,9 +116,6 @@ class DoRun(ActionDefinition):
         reason = ""
         is_temp_scan_defined = start_temperature is not None and stop_temperature is not None
         is_field_scan_defined = start_field is not None and stop_field is not None
-        # Must define one of the scans otherwise we are doing nothing
-        if not is_field_scan_defined and not is_temp_scan_defined:
-            reason += "Neither temp nor field scans have been defined\n"
         if is_temp_scan_defined:
             # Cannot go below zero kelvin
             if start_temperature < 0.0 and stop_temperature < 0.0:
@@ -133,8 +134,8 @@ class DoRun(ActionDefinition):
             if start_field == stop_field and step_field != 0.0:
                 reason += "You will be setting the field to {} {} times\n".format(start_field, step_field)
             # Only the zero field can set a field of zero
-            if math.isclose(start_field, 0.0) or math.isclose(stop_field, 0.0) and magnet_device != self.active_zf:
-                reason += "Trying to set a zero field without using the active zero field (ZF)\n"
+            if (math.isclose(start_field, 0.0) or math.isclose(stop_field, 0.0)) and magnet_device != self.active_zf:
+                reason += "Trying to set a zero field without using the active zero field ({}, {})\n".format(magnet_device, self.active_zf)
         # If there is no reason return None i.e. the parameters are valid
         if reason != "":
             return reason
