@@ -2,43 +2,54 @@ from genie_python.genie_script_generator import ActionDefinition, cast_parameter
 from genie_python import genie as g
 from importlib import import_module
 
-# Allow a user to input keep or empty string and we will use None
-def cast_temp_or_field(temp_or_field):
-    if temp_or_field.lower() == "keep" or temp_or_field == "":
+# Allow a user to input keep and we will know not to update the value as we cast to None
+def float_or_keep(temp_or_field):
+    if temp_or_field.lower() == "keep":
         return None
     else:
         return float(temp_or_field)
 
-def cast_magnet_device(magnet_device):
-    magnet_cast = {"ZF": "Active ZF", "LF": "Danfysik", "TF": "T20 Coils"}
-    return magnet_cast[magnet_device]
+magnet_devices = {"ZF": "Active ZF", "LF": "Danfysik", "TF": "T20 Coils"}
+
+# Convert to magnet device type if possible, if not they have input an incorrect magnet_device
+# Raise a ValueError and this will be caught and displayed to the user that the conversion is incorrect 
+def magnet_device_type(magnet_device):
+    if magnet_device in magnet_devices.keys():
+        return magnet_devices[magnet_device]
+    elif magnet_device == "N/A":
+        return magnet_device
+    raise ValueError
 
 class DoRun(ActionDefinition):
 
-    possible_magnet_devices = ["ZF", "TF", "LF"]
-
-    @cast_parameters_to(temperature=cast_temp_or_field, field=cast_temp_or_field, mevents=int, magnet_device=cast_magnet_device)
+    @cast_parameters_to(temperature=float_or_keep, field=float_or_keep, mevents=int, magnet_device=magnet_device_type)
     def run(self, temperature=1.0, field=1.0, mevents=10, magnet_device="N/A"):
         inst = import_module("inst")
-        magnet_to_function_map = {"Active ZF": inst.f0, "Danfysik": inst.lf0, "T20 Coils": inst.tf0}
+        # Don't set temp if the user has specified keep
         if temperature is not None:
             inst.set_temp(temperature, wait=True)
+        # Don't set field if the user has specified keep
         if field is not None:
+            # Select a magnet to set the field with
             if g.cget("a_selected_magnet")["value"] != magnet_device:
+                magnet_to_function_map = {"Active ZF": inst.f0, "Danfysik": inst.lf0, "T20 Coils": inst.tf0}
                 magnet_to_function_map[magnet_device]()
             inst.set_mag(field, wait=True)
+        # Do the run for this action
         g.begin(quiet=True)
         g.waitfor_mevents(mevents)
         g.end(quiet=True)
 
-    @cast_parameters_to(temperature=cast_temp_or_field, field=cast_temp_or_field, mevents=int, magnet_device=cast_magnet_device)
+    @cast_parameters_to(temperature=float_or_keep, field=float_or_keep, mevents=int, magnet_device=magnet_device_type)
     def parameters_valid(self, temperature=1.0, field=1.0, mevents=10, magnet_device="N/A"):
         reason = ""
         if temperature is not None:
             if temperature < 0.0:
                 reason += "Temperature too low"
-        if magnet_device not in self.possible_magnet_devices:
-            reason += "Magnet devices {} not in possible devices {}".format(magnet_device, self.possible_magnet_devices)
+        # We need a suitable device to set the field with
+        if field is not None and magnet_device not in magnet_devices.values():
+            reason += "Field set but magnet devices {} not in possible devices {}".format(magnet_device, list(magnet_devices.keys()))
+        # If there are no reasons with the action isn't valid then return None (saying that it is)
         if reason != "":
             return reason
         else:
