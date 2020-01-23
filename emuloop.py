@@ -16,9 +16,9 @@ magnet_devices = {"ZF": "Active ZF", "LF": "Danfysik", "TF": "T20 Coils"}
 # Convert to magnet device type if possible, if not they have input an incorrect magnet_device
 # Raise a ValueError and this will be caught and displayed to the user that the conversion is incorrect 
 def magnet_device_type(magnet_device):
-    if magnet_device in magnet_devices.keys():
+    if magnet_device.upper() in magnet_devices.keys():
         return magnet_devices[magnet_device]
-    elif magnet_device == "N/A":
+    elif magnet_device.upper() == "N/A":
         return magnet_device
     raise ValueError
 
@@ -50,11 +50,23 @@ class DoRun(ActionDefinition):
          magnet_device="N/A"):
         # We can only scan through temp and field if all of start, stop and step are defined correctly
         is_temp_scan_defined = start_temperature is not None and stop_temperature is not None
-        if is_temp_scan_defined and start_temperature == stop_temperature:
-            step_temperature = 1 # Execute the step from x to x once 
+        if is_temp_scan_defined:
+            if start_temperature == stop_temperature:
+                step_temperature = 1 # Execute the step from x to x once 
+            elif start_temperature > stop_temperature:
+                step_temperature = -step_temperature # We need to be stepping backwards
+                stop_temperature -= 0.00001 # Python range is not inclusive
+            else:
+                stop_temperature += 0.00001 # Python range is not inclusive
         is_field_scan_defined = start_field is not None and stop_field is not None
-        if is_field_scan_defined and start_field == stop_field:
-            step_field = 1 # Execute the step from x to x once 
+        if is_field_scan_defined:
+            if start_field == stop_field:
+                step_field = 1 # Execute the step from x to x once 
+            elif start_field > stop_field:
+                step_field = -step_field # We need to be stepping backwards
+                stop_field -= 0.00001 # Python range is not inclusive
+            else:
+                stop_field += 0.00001 # Python range is not inclusive
         # Use the instrument scripts to set the magnet correctly
         inst = import_module("inst")
         magnet_to_function_map = {"Active ZF": inst.f0, "Danfysik": inst.lf0, "T20 Coils": inst.tf0}
@@ -65,10 +77,10 @@ class DoRun(ActionDefinition):
             # Evaluate the user command before scanning
             eval(custom)
             # When we are scanning both temperature and field do all combinations
-            for temp in np.arange(start_temperature, stop_temperature+0.00001, step_temperature):
-                for field in np.arange(start_field, stop_field+0.00001, step_field):
-                    inst.set_mag(field, wait=True)
-                    inst.set_temp(temp, wait=True)
+            for temp in np.arange(start_temperature, stop_temperature, step_temperature):
+                for field in np.arange(start_field, stop_field, step_field):
+                    inst.setmag(field, wait=True)
+                    inst.settemp(temp, wait=True)
                     # Do a run for this mag and temp
                     g.begin(quiet=True)
                     g.waitfor_mevents(mevents)
@@ -77,8 +89,8 @@ class DoRun(ActionDefinition):
             # Evaluate the user command before scanning
             eval(custom)
             # Scan through temps
-            for temp in np.arange(start_temperature, stop_temperature+0.00001, step_temperature):
-                inst.set_temp(temp, wait=True)
+            for temp in np.arange(start_temperature, stop_temperature, step_temperature):
+                inst.settemp(temp, wait=True)
                 # Do a run for this temp
                 g.begin(quiet=True)
                 g.waitfor_mevents(mevents)
@@ -87,7 +99,7 @@ class DoRun(ActionDefinition):
             # Evaluate the user command before scanning
             eval(custom)
             # Scan through fields
-            for field in np.arange(start_field, stop_field+0.00001, step_field):
+            for field in np.arange(start_field, stop_field, step_field):
                 inst.set_mag(field, wait=True)
                 # Do a run for this temp
                 g.begin(quiet=True)
@@ -129,7 +141,7 @@ class DoRun(ActionDefinition):
              # If we are defining a field scan we need to set the magnet
             if magnet_device not in magnet_devices.values():
                 reason += "Field set but magnet devices {} not in possible devices {}\n".format(magnet_device, list(magnet_devices.keys()))
-            if start_field != stop_field and stop_field == 0.0:
+            if start_field != stop_field and step_field == 0.0:
                 reason += "Cannot step through fields when step is zero\n"
             if start_field == stop_field and step_field != 0.0:
                 reason += "You will be setting the field to {} {} times\n".format(start_field, step_field)
