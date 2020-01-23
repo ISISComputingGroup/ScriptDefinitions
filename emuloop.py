@@ -100,7 +100,7 @@ class DoRun(ActionDefinition):
             eval(custom)
             # Scan through fields
             for field in np.arange(start_field, stop_field, step_field):
-                inst.set_mag(field, wait=True)
+                inst.setmag(field, wait=True)
                 # Do a run for this temp
                 g.begin(quiet=True)
                 g.waitfor_mevents(mevents)
