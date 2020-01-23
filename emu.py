@@ -27,14 +27,14 @@ class DoRun(ActionDefinition):
         inst = import_module("inst")
         # Don't set temp if the user has specified keep
         if temperature is not None:
-            inst.set_temp(temperature, wait=True)
+            inst.settemp(temperature, wait=True)
         # Don't set field if the user has specified keep
         if field is not None:
             # Select a magnet to set the field with
             if g.cget("a_selected_magnet")["value"] != magnet_device:
                 magnet_to_function_map = {"Active ZF": inst.f0, "Danfysik": inst.lf0, "T20 Coils": inst.tf0}
                 magnet_to_function_map[magnet_device]()
-            inst.set_mag(field, wait=True)
+            inst.setmag(field, wait=True)
         # Do the run for this action
         g.begin(quiet=True)
         g.waitfor_mevents(mevents)
