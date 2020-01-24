@@ -2,7 +2,6 @@ from genie_python.genie_script_generator import ActionDefinition, cast_parameter
 from genie_python import genie as g
 from importlib import import_module
 import numpy as np
-import math
 
 # Allow the user to right keep in temp or field to use the current value
 def float_or_keep(temp_or_field):
@@ -146,7 +145,7 @@ class DoRun(ActionDefinition):
             if start_field == stop_field and step_field != 0.0:
                 reason += "You will be setting the field to {} {} times\n".format(start_field, step_field)
             # Only the zero field can set a field of zero
-            if (math.isclose(start_field, 0.0) or math.isclose(stop_field, 0.0)) and magnet_device != self.active_zf:
+            if (np.isclose(start_field, 0.0) or np.isclose(stop_field, 0.0)) and magnet_device != self.active_zf:
                 reason += "Trying to set a zero field without using the active zero field ({}, {})\n".format(magnet_device, self.active_zf)
         # If there is no reason return None i.e. the parameters are valid
         if reason != "":
