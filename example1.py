@@ -16,3 +16,5 @@ class DoRun(ActionDefinition):
         else:
             return None
 
+    def get_help(self):
+        return None
