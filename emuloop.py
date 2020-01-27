@@ -145,16 +145,12 @@ If the field is zero magnet device must be ZF.\n
             # We need to step thorugh at some rate
             if start_temperature != stop_temperature and step_temperature == 0.0:
                 reason += "Cannot step through temperatures when step is zero\n"
-            if start_temperature == stop_temperature and step_temperature != 0.0:
-                reason += "You will be setting the temperature to {} {} times\n".format(start_temperature, step_temperature)
         if is_field_scan_defined:
              # If we are defining a field scan we need to set the magnet
             if magnet_device not in magnet_devices.values():
                 reason += "Field set but magnet devices {} not in possible devices {}\n".format(magnet_device, list(magnet_devices.keys()))
             if start_field != stop_field and step_field == 0.0:
                 reason += "Cannot step through fields when step is zero\n"
-            if start_field == stop_field and step_field != 0.0:
-                reason += "You will be setting the field to {} {} times\n".format(start_field, step_field)
             # Only the zero field can set a field of zero
             if (np.isclose(start_field, 0.0) or np.isclose(stop_field, 0.0)) and magnet_device != self.active_zf:
                 reason += "Trying to set a zero field without using the active zero field ({}, {})\n".format(magnet_device, self.active_zf)
