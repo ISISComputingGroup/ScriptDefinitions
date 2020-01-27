@@ -77,7 +77,7 @@ If the field is zero magnet device must be ZF.\n
         inst = import_module("inst")
         magnet_to_function_map = {"Active ZF": inst.f0, "Danfysik": inst.lf0, "T20 Coils": inst.tf0}
         if g.cget("a_selected_magnet")["value"] != magnet_device:
-                magnet_to_function_map[magnet_device]()
+            magnet_to_function_map[magnet_device]()
         # Do scans
         if is_temp_scan_defined and is_field_scan_defined:
             # Evaluate the user command before scanning
@@ -85,12 +85,13 @@ If the field is zero magnet device must be ZF.\n
             # When we are scanning both temperature and field do all combinations
             for temp in np.arange(start_temperature, stop_temperature, step_temperature):
                 for field in np.arange(start_field, stop_field, step_field):
-                    inst.setmag(field, wait=True)
                     inst.settemp(temp, wait=True)
+                    inst.setmag(field, wait=True)
                     # Do a run for this mag and temp
-                    g.begin(quiet=True)
-                    g.waitfor_mevents(mevents)
-                    g.end(quiet=True)
+                    if mevents > 0:
+                        g.begin(quiet=True)
+                        g.waitfor_mevents(mevents)
+                        g.end(quiet=True)
         elif is_temp_scan_defined:
             # Evaluate the user command before scanning
             eval(custom)
@@ -98,9 +99,10 @@ If the field is zero magnet device must be ZF.\n
             for temp in np.arange(start_temperature, stop_temperature, step_temperature):
                 inst.settemp(temp, wait=True)
                 # Do a run for this temp
-                g.begin(quiet=True)
-                g.waitfor_mevents(mevents)
-                g.end(quiet=True)
+                if mevents > 0:
+                    g.begin(quiet=True)
+                    g.waitfor_mevents(mevents)
+                    g.end(quiet=True)
         elif is_field_scan_defined:
             # Evaluate the user command before scanning
             eval(custom)
@@ -108,13 +110,15 @@ If the field is zero magnet device must be ZF.\n
             for field in np.arange(start_field, stop_field, step_field):
                 inst.setmag(field, wait=True)
                 # Do a run for this temp
+                if mevents > 0:
+                    g.begin(quiet=True)
+                    g.waitfor_mevents(mevents)
+                    g.end(quiet=True)
+        else:
+            if mevents > 0:
                 g.begin(quiet=True)
                 g.waitfor_mevents(mevents)
                 g.end(quiet=True)
-        else:
-            g.begin(quiet=True)
-            g.waitfor_mevents(mevents)
-            g.end(quiet=True)
 
 
     # Check to see if the provided parameters are valid
