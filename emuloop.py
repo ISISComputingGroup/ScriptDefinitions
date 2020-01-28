@@ -19,7 +19,7 @@ def magnet_device_type(magnet_device):
         return magnet_devices[magnet_device]
     elif magnet_device.upper() == "N/A":
         return magnet_device
-    raise ValueError
+    raise ValueError("Magnet device must be one of {} or N/A".format(magnet_devices))
 
 # Cast the custom python expression to a string or None if empty
 def cast_custom_expression(expression):

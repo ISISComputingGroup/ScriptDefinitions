@@ -18,7 +18,7 @@ def magnet_device_type(magnet_device):
         return magnet_devices[magnet_device]
     elif magnet_device == "N/A":
         return magnet_device
-    raise ValueError
+    raise ValueError("Magnet device must be one of {} or N/A".format(magnet_devices))
 
 class DoRun(ActionDefinition):
 
