@@ -14,9 +14,10 @@ magnet_devices = {"ZF": "Active ZF", "LF": "Danfysik", "TF": "T20 Coils"}
 # Convert to magnet device type if possible, if not they have input an incorrect magnet_device
 # Raise a ValueError and this will be caught and displayed to the user that the conversion is incorrect 
 def magnet_device_type(magnet_device):
-    if magnet_device.upper() in magnet_devices.keys():
+    magnet_device = magnet_device.upper()
+    if magnet_device in magnet_devices.keys():
         return magnet_devices[magnet_device]
-    elif magnet_device.upper() == "N/A":
+    elif magnet_device == "N/A":
         return magnet_device
     raise ValueError("Magnet device must be one of {} or N/A".format(magnet_devices))
 
