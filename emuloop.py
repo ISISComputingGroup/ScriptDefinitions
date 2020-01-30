@@ -137,8 +137,9 @@ If the field is zero magnet device must be ZF.\n
          magnet_device="N/A"):
         # The reason as to why the parameters are not valid
         reason = ""
+        if (start_temperature is None and stop_temperature is not None) or (stop_temperature is None and start_temperature is not None):
+            reason += "If start temperature or stop_temperature is keep, the other must also be keep"
         is_temp_scan_defined = start_temperature is not None and stop_temperature is not None
-        is_field_scan_defined = start_field is not None and stop_field is not None
         if is_temp_scan_defined:
             # Cannot go below zero kelvin
             if start_temperature < 0.0 and stop_temperature < 0.0:
@@ -146,6 +147,9 @@ If the field is zero magnet device must be ZF.\n
             # We need to step thorugh at some rate
             if start_temperature != stop_temperature and step_temperature == 0.0:
                 reason += "Cannot step through temperatures when step is zero\n"
+        if (start_field is None and stop_field is not None) or (stop_field is None and start_field is not None):
+            reason += "If start temperature or stop_temperature is keep, the other must also be keep"
+        is_field_scan_defined = start_field is not None and stop_field is not None
         if is_field_scan_defined:
              # If we are defining a field scan we need to set the magnet
             if magnet_device not in magnet_devices.values():
