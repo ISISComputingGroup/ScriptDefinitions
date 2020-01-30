@@ -56,6 +56,8 @@ If the field is zero magnet device must be ZF.\n
         # We need a suitable device to set the field with
         if field is not None and magnet_device not in magnet_devices.values():
             reason += "Field set but magnet devices {} not in possible devices {}".format(magnet_device, list(magnet_devices.keys()))
+        if field == 0 and magnet_device != magnet_devices["ZF"]:
+            reason += "When setting a zero field must use ZF"
         # If there are no reasons with the action isn't valid then return None (saying that it is)
         if reason != "":
             return reason
