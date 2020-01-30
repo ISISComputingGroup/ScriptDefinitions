@@ -156,6 +156,8 @@ If the field is zero magnet device must be ZF.\n
             # Only the zero field can set a field of zero
             if (np.isclose(start_field, 0.0) or np.isclose(stop_field, 0.0)) and magnet_device != self.active_zf:
                 reason += "Trying to set a zero field without using the active zero field ({}, {})\n".format(magnet_device, self.active_zf)
+            if not (np.isclose(start_field, 0.0) or not np.isclose(stop_field, 0.0)) and magnet_device == self.active_zf:
+                reason += "When setting a zero field must use ZF"
         # If there is no reason return None i.e. the parameters are valid
         if reason != "":
             return reason
