@@ -60,6 +60,7 @@ If the field is zero magnet device must be ZF.\n
         if is_temp_scan_defined:
             if start_temperature == stop_temperature:
                 step_temperature = 1 # Execute the step from x to x once 
+                stop_temperature += 0.00001 # Python range is not inclusive
             elif start_temperature > stop_temperature:
                 step_temperature = -step_temperature # We need to be stepping backwards
                 stop_temperature -= 0.00001 # Python range is not inclusive
@@ -69,6 +70,7 @@ If the field is zero magnet device must be ZF.\n
         if is_field_scan_defined:
             if start_field == stop_field:
                 step_field = 1 # Execute the step from x to x once 
+                stop_field += 0.00001 # Python range is not inclusive
             elif start_field > stop_field:
                 step_field = -step_field # We need to be stepping backwards
                 stop_field -= 0.00001 # Python range is not inclusive
