@@ -1,4 +1,4 @@
-from emu import magnet_device_type, magnet_devices, float_or_keep, cast_custom_expression
+from emu import magnet_device_type, magnet_devices, float_or_keep
 from emuloop import magnet_device_type as magnet_device_type_loop, magnet_devices as magnet_devices_loop
 from emuloop import float_or_keep as float_or_keep_loop, cast_custom_expression as cast_custom_expression_loop
 
@@ -91,9 +91,7 @@ class TestFloatOrKeepCall(unittest.TestCase):
 class TestCustomExpressionCaster(unittest.TestCase):
 
     def test_GIVEN_empty_expression_WHEN_cast_THEN_none_is_returned(self):
-        self.assertEqual(cast_custom_expression(""), "None", "We insert None, because eval(\"\") gives an error")
         self.assertEqual(cast_custom_expression_loop(""), "None", "We insert None, because eval(\"\") gives an error")
 
     def test_GIVEN_non_empty_expression_WHEN_cast_THEN_it_is_returned(self):
-        self.assertEqual(cast_custom_expression("test"), "test")
         self.assertEqual(cast_custom_expression_loop("test"), "test")

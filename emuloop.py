@@ -137,6 +137,7 @@ If the field is zero magnet device must be ZF.\n
             inst.settemp(start_field, wait=True)
         if field_set_definition == SetDefinition.POINT:
             inst.setmag(start_field, wait=True)
+        # If we are running scans do them
         if temp_set_definition == SetDefinition.SCAN and field_set_definition == SetDefinition.SCAN:
             # When we are running scans for both temperature and field do all combinations
             self.run_temp_and_field_scans(start_temperature, stop_temperature, step_temperature,
