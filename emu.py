@@ -65,9 +65,6 @@ If the field is zero magnet device must be ZF.\n
     @cast_parameters_to(temperature=float_or_keep, field=float_or_keep, mevents=int, magnet_device=magnet_device_type)
     def parameters_valid(self, temperature=1.0, field=1.0, mevents=10, magnet_device="N/A"):
         reason = ""
-        if temperature is not None:
-            if temperature < 0.0:
-                reason += "Temperature too low"
         # We need a suitable device to set the field with
         if field is not None and magnet_device not in magnet_devices.values():
             reason += "Field set but magnet devices {} not in possible devices {}".format(magnet_device, list(magnet_devices.keys()))
