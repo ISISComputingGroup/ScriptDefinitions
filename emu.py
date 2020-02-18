@@ -1,6 +1,5 @@
 from genie_python.genie_script_generator import ActionDefinition, cast_parameters_to
 from genie_python import genie as g
-from importlib import import_module
 
 
 # Allow the user to right keep in temp or field to use the current value
@@ -46,6 +45,7 @@ If the field is zero magnet device must be ZF.\n
         import inst
         # Don't set temp if the user has specified keep
         if temperature is not None:
+            print("SETTING TEMP")
             inst.settemp(temperature, wait=True)
         # Don't set field if the user has specified keep
         if field is not None:
@@ -53,6 +53,7 @@ If the field is zero magnet device must be ZF.\n
             if g.cget("a_selected_magnet")["value"] != magnet_device:
                 magnet_to_function_map = {"Active ZF": inst.f0, "Danfysik": inst.lf0, "T20 Coils": inst.tf0}
                 magnet_to_function_map[magnet_device]()
+            print("SETTING MAG")
             inst.setmag(field, wait=True)
         # Do the run for this action
         self.begin_waitfor_mevents_end(mevents)
