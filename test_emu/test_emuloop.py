@@ -3,7 +3,7 @@ from mock import patch, MagicMock
 import sys
 inst_mock = MagicMock()
 sys.modules['inst'] = inst_mock
-from emuloop import inclusive_float_range_with_step_flip, DoRun
+from emuloop import inclusive_float_range_with_step_flip, DoRun, SetDefinition
 import unittest
 
 
@@ -129,3 +129,78 @@ class TestRun(unittest.TestCase):
         inst_mock.setmag.assert_not_called()
         inst_mock.settemp.assert_not_called()
         self.script_definition.begin_waitfor_mevents_end.assert_called_once()
+
+
+class TestEmuRunHelpers(unittest.TestCase):
+
+    def setUp(self):
+        self.script_definition = DoRun()
+        inst_mock.reset_mock()
+
+    @patch('genie_python.genie.begin')
+    @patch('genie_python.genie.end')
+    @patch('genie_python.genie.waitfor_mevents')
+    def test_GIVEN_no_mevents_to_wait_for_WHEN_run_THEN_no_run_started(self, begin_mock, _, __):
+        self.script_definition.begin_waitfor_mevents_end(0)
+        begin_mock.assert_not_called()
+        self.script_definition.begin_waitfor_mevents_end(-3)
+        begin_mock.assert_not_called()
+
+    @patch('genie_python.genie.begin')
+    @patch('genie_python.genie.end')
+    @patch('genie_python.genie.waitfor_mevents')
+    def test_GIVEN_more_than_one_mevents_to_wait_for_WHEN_run_THEN_run_started(self, begin_mock, _, __):
+        self.script_definition.begin_waitfor_mevents_end(3)
+        begin_mock.assert_called_once()
+
+    @patch('genie_python.genie.cget', return_value={"value": "A Magnet"})
+    def test_GIVEN_danfysik_new_selection_WHEN_select_magnet_THEN_danfysik_selected(self, _):
+        self.script_definition.set_magnet_device("Danfysik", inst_mock)
+        inst_mock.lf0.assert_called_once()
+
+    @patch('genie_python.genie.cget', return_value={"value": "Danfysik"})
+    def test_GIVEN_danfysik_old_selection_WHEN_select_magnet_THEN_danfysik_stays_selected(self, _):
+        self.script_definition.set_magnet_device("Danfysik", inst_mock)
+        inst_mock.lf0.assert_not_called()
+
+    @patch('genie_python.genie.cget', return_value={"value": "A Magnet"})
+    def test_GIVEN_t20_coils_new_selection_WHEN_select_magnet_THEN_t20_coils_selected(self, _):
+        self.script_definition.set_magnet_device("T20 Coils", inst_mock)
+        inst_mock.tf0.assert_called_once()
+
+    @patch('genie_python.genie.cget', return_value={"value": "T20 Coils"})
+    def test_GIVEN_t20_coils_old_selection_WHEN_select_magnet_THEN_t20_coils_stays_selected(self, _):
+        self.script_definition.set_magnet_device("T20 Coils", inst_mock)
+        inst_mock.tf0.assert_not_called()
+
+    @patch('genie_python.genie.cget', return_value={"value": "A Magnet"})
+    def test_GIVEN_active_zf_new_selection_WHEN_select_magnet_THEN_active_zf_selected(self, _):
+        self.script_definition.set_magnet_device("Active ZF", inst_mock)
+        inst_mock.f0.assert_called_once()
+
+    @patch('genie_python.genie.cget', return_value={"value": "Active ZF"})
+    def test_GIVEN_active_zf_old_selection_WHEN_select_magnet_THEN_active_zf_stays_selected(self, _):
+        self.script_definition.set_magnet_device("Active ZF", inst_mock)
+        inst_mock.f0.assert_not_called()
+
+    def test_GIVEN_start_stop_equal_WHEN_check_set_definition_THEN_definition_is_point(self):
+        self.assertEqual(self.script_definition.check_set_definition(3.0, 3.0), SetDefinition.POINT)
+
+    def test_GIVEN_start_stop_None_WHEN_check_set_definition_THEN_definition_is_undefined(self):
+        self.assertEqual(self.script_definition.check_set_definition(None, None), SetDefinition.UNDEFINED)
+
+    def test_GIVEN_start_None_WHEN_check_set_definition_THEN_definition_is_undefined(self):
+        self.assertEqual(self.script_definition.check_set_definition(None, 3.0), SetDefinition.UNDEFINED)
+
+    def test_GIVEN_stop_None_WHEN_check_set_definition_THEN_definition_is_undefined(self):
+        self.assertEqual(self.script_definition.check_set_definition(3.0, None), SetDefinition.UNDEFINED)
+
+    def test_GIVEN_start_stop_not_equal_WHEN_check_set_definition_THEN_definition_is_undefined(self):
+        self.assertEqual(self.script_definition.check_set_definition(3.0, 3.1), SetDefinition.SCAN)
+
+
+class TestParameterValidation(unittest.TestCase):
+
+    def setUp(self):
+        self.script_definition = DoRun()
+

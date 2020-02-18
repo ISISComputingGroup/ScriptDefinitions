@@ -176,14 +176,14 @@ If the field is zero magnet device must be ZF.\n
         # The reason as to why the parameters are not valid
         reason = ""
         if (start_temperature is None and stop_temperature is not None) or (stop_temperature is None and start_temperature is not None):
-            reason += "If start temperature or stop_temperature is keep, the other must also be keep"
+            reason += "If start temperature or stop_temperature is keep, the other must also be keep\n"
         is_temp_scan_defined = start_temperature is not None and stop_temperature is not None
         if is_temp_scan_defined:
             # We need to step thorugh at some rate
             if start_temperature != stop_temperature and step_temperature <= 0.0:
                 reason += "Cannot step through temperatures when step is zero\n"
         if (start_field is None and stop_field is not None) or (stop_field is None and start_field is not None):
-            reason += "If start field or stop field is keep, the other must also be keep"
+            reason += "If start field or stop field is keep, the other must also be keep\n"
         is_field_scan_defined = start_field is not None and stop_field is not None
         if is_field_scan_defined:
             # If we are defining a field scan we need to set the magnet
@@ -195,7 +195,7 @@ If the field is zero magnet device must be ZF.\n
             if (np.isclose(start_field, 0.0) or np.isclose(stop_field, 0.0)) and magnet_device != self.active_zf:
                 reason += "Trying to set a zero field without using the active zero field ({}, {})\n".format(magnet_device, self.active_zf)
             if not (np.isclose(start_field, 0.0) or not np.isclose(stop_field, 0.0)) and magnet_device == self.active_zf:
-                reason += "When setting a zero field must use ZF"
+                reason += "When setting a zero field must use ZF\n"
         # If there is no reason return None i.e. the parameters are valid
         if reason != "":
             return reason
