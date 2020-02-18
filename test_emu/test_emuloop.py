@@ -216,7 +216,7 @@ class TestParameterValidation(unittest.TestCase):
             self.script_definition.parameters_valid(start_temperature="keep", stop_temperature="1.0",
                                                     step_temperature="1", start_field="keep", stop_field="keep",
                                                     step_field="1", custom="None", mevents="10", magnet_device="TF"),
-            "If start temperature or stop_temperature is keep, the other must also be keep\n",
+            "If start temperature or stop temperature is keep, the other must also be keep\n",
         )
 
     def test_GIVEN_temp_stop_is_keep_and_start_not_keep_WHEN_validate_THEN_does_not_validate(self):
@@ -224,7 +224,7 @@ class TestParameterValidation(unittest.TestCase):
             self.script_definition.parameters_valid(start_temperature="1.0", stop_temperature="keep",
                                                     step_temperature="1", start_field="keep", stop_field="keep",
                                                     step_field="1", custom="None", mevents="10", magnet_device="TF"),
-            "If start temperature or stop_temperature is keep, the other must also be keep\n",
+            "If start temperature or stop temperature is keep, the other must also be keep\n",
         )
 
     def test_GIVEN_field_start_is_keep_and_stop_not_keep_WHEN_validate_THEN_does_not_validate(self):

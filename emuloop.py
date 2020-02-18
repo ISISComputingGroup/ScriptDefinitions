@@ -189,17 +189,36 @@ If the field is zero magnet device must be ZF.\n
                          custom="None",  mevents=10, magnet_device="N/A"):
         # The reason as to why the parameters are not valid
         reason = ""
-        if (start_temperature is None and stop_temperature is not None) or (stop_temperature is None and start_temperature is not None):
-            reason += "If start temperature or stop_temperature is keep, the other must also be keep\n"
-        temp_set_definition = self.check_set_definition(start_temperature, stop_temperature)
-        if temp_set_definition == SetDefinition.SCAN:
+        reason += self.check_keep_in_neither_or_both(start_temperature, stop_temperature, "temperature")
+        reason += self.check_keep_in_neither_or_both(start_field, stop_field, "field")
+        reason += self.check_step_set_correctly(start_temperature, stop_temperature, step_temperature, "temperature")
+        reason += self.check_step_set_correctly(start_field, stop_field, step_field, "field")
+        reason += self.check_magnet_selected_correctly(start_field, stop_field, magnet_device)
+        # If there is no reason return None i.e. the parameters are valid
+        if reason != "":
+            return reason
+        else:
+            return None
+
+    def check_keep_in_neither_or_both(self, start, stop, variable_name):
+        if (start is None and stop is not None) or (stop is None and start is not None):
+            return "If start {0} or stop {0} is keep, the other must also be keep\n".format(variable_name)
+        else:
+            return ""
+
+    def check_step_set_correctly(self, start, stop, step, variable_name):
+        reason = ""
+        set_definition = self.check_set_definition(start, stop)
+        if set_definition == SetDefinition.SCAN:
             # We need to step through at some rate
-            if step_temperature == 0.0:
-                reason += "Cannot step through temperatures when step is zero\n"
-            elif step_temperature < 0.0:
-                reason += "Step temperature must be positive\n"
-        if (start_field is None and stop_field is not None) or (stop_field is None and start_field is not None):
-            reason += "If start field or stop field is keep, the other must also be keep\n"
+            if step == 0.0:
+                reason += "Cannot step through {}s when step is zero\n".format(variable_name)
+            elif step < 0.0:
+                reason += "Step {} must be positive\n".format(variable_name)
+        return reason
+
+    def check_magnet_selected_correctly(self, start_field, stop_field, magnet_device):
+        reason = ""
         field_set_definition = self.check_set_definition(start_field, stop_field)
         if field_set_definition != SetDefinition.UNDEFINED:
             # If we are setting a field we need to set the magnet device to use
@@ -210,15 +229,7 @@ If the field is zero magnet device must be ZF.\n
             if (np.isclose(start_field, 0.0) or np.isclose(stop_field, 0.0)) and magnet_device != self.active_zf:
                 reason += "Trying to set a zero field without using the active zero field ({}, {})\n".format(
                     magnet_device, self.active_zf)
-            if (not np.isclose(start_field, 0.0) or not np.isclose(stop_field, 0.0)) and magnet_device == self.active_zf:
+            if (not np.isclose(start_field, 0.0) or not np.isclose(stop_field,
+                                                                   0.0)) and magnet_device == self.active_zf:
                 reason += "Cannot set a non-zero field with the active zero field\n"
-        if field_set_definition == SetDefinition.SCAN:
-            if step_field == 0.0:
-                reason += "Cannot step through fields when step is zero\n"
-            elif step_field < 0.0:
-                reason += "Step field must be positive\n"
-        # If there is no reason return None i.e. the parameters are valid
-        if reason != "":
-            return reason
-        else:
-            return None
+        return reason
