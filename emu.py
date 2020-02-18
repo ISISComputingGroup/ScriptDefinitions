@@ -1,5 +1,6 @@
 from genie_python.genie_script_generator import ActionDefinition, cast_parameters_to
 from genie_python import genie as g
+import numpy as np
 
 
 # Allow the user to right keep in temp or field to use the current value
@@ -45,7 +46,6 @@ If the field is zero magnet device must be ZF.\n
         import inst
         # Don't set temp if the user has specified keep
         if temperature is not None:
-            print("SETTING TEMP")
             inst.settemp(temperature, wait=True)
         # Don't set field if the user has specified keep
         if field is not None:
@@ -53,7 +53,6 @@ If the field is zero magnet device must be ZF.\n
             if g.cget("a_selected_magnet")["value"] != magnet_device:
                 magnet_to_function_map = {"Active ZF": inst.f0, "Danfysik": inst.lf0, "T20 Coils": inst.tf0}
                 magnet_to_function_map[magnet_device]()
-            print("SETTING MAG")
             inst.setmag(field, wait=True)
         # Do the run for this action
         self.begin_waitfor_mevents_end(mevents)
@@ -68,11 +67,12 @@ If the field is zero magnet device must be ZF.\n
         reason = ""
         # We need a suitable device to set the field with
         if field is not None and magnet_device not in magnet_devices.values():
-            reason += "Field set but magnet devices {} not in possible devices {}".format(magnet_device, list(magnet_devices.keys()))
-        if field == 0 and magnet_device != magnet_devices["ZF"]:
-            reason += "When setting a zero field must use ZF"
-        if field != 0 and magnet_device == magnet_devices["ZF"]:
-            reason += "Cannot have a non-zero field when selecting ZF"
+            reason += "Field set but magnet devices {} not in possible devices {}\n".format(
+                magnet_device, list(magnet_devices.keys()))
+        if np.isclose(field, 0) and magnet_device != magnet_devices["ZF"]:
+            reason += "When setting a zero field must use ZF\n"
+        if not np.isclose(field, 0) and magnet_device == magnet_devices["ZF"]:
+            reason += "Cannot have a non-zero field when selecting ZF\n"
         # If there are no reasons with the action isn't valid then return None (saying that it is)
         if reason != "":
             return reason
