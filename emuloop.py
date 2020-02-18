@@ -60,7 +60,7 @@ def magnet_device_type(magnet_device):
         return magnet_devices[magnet_device]
     elif magnet_device == "N/A":
         return magnet_device
-    raise ValueError("Magnet device must be one of {} or N/A".format(magnet_devices.keys()))
+    raise ValueError("Magnet device must be one of {} or N/A".format(list(magnet_devices.keys())))
 
 
 def cast_custom_expression(expression):
@@ -132,10 +132,11 @@ If the field is zero magnet device must be ZF.\n
             self.set_magnet_device(magnet_device, inst)
         # Execute a custom command
         eval(custom)
-        if field_set_definition == SetDefinition.POINT:
-            inst.setmag(start_field, wait=True)
+        # If we are only setting once set it
         if temp_set_definition == SetDefinition.POINT:
             inst.settemp(start_field, wait=True)
+        if field_set_definition == SetDefinition.POINT:
+            inst.setmag(start_field, wait=True)
         # Run scans for both the temperature and the field
         if temp_set_definition == SetDefinition.SCAN and field_set_definition == SetDefinition.SCAN:
             # When we are scanning both temperature and field do all combinations
@@ -146,6 +147,7 @@ If the field is zero magnet device must be ZF.\n
         elif field_set_definition == SetDefinition.SCAN:  # Run scans for the field
             self.run_scans(start_field, stop_field, step_field, mevents, inst.setmag)
         else:
+            # If we are not doing any scans do a run with temp and field as they are
             self.check_mevents_and_begin_waitfor_mevents_end(mevents)
 
     def check_mevents_and_begin_waitfor_mevents_end(self, mevents):
@@ -224,7 +226,7 @@ If the field is zero magnet device must be ZF.\n
             # If we are setting a field we need to set the magnet device to use
             if magnet_device not in magnet_devices.values():
                 reason += "Field set but magnet devices {} not in possible devices {}\n".format(
-                    magnet_device, magnet_devices.keys())
+                    magnet_device, list(magnet_devices.keys()))
             # Only the zero field can set a field of zero
             if (np.isclose(start_field, 0.0) or np.isclose(stop_field, 0.0)) and magnet_device != self.active_zf:
                 reason += "Trying to set a zero field without using the active zero field ({}, {})\n".format(
