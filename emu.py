@@ -3,34 +3,51 @@ from genie_python import genie as g
 import numpy as np
 
 
-# Allow the user to right keep in temp or field to use the current value
 def float_or_keep(temp_or_field):
+    """
+    Convert the input to a float or None if the input is keep (to allow not changing of a temperature or field).
+
+    Parameters:
+      temp_or_field (str): The temperature or field to cast
+
+    Returns:
+      float: The casted input. Will be None if temp_or_field  is 'keep'.
+
+    Raises:
+      ValueError: When temp_or_field is not either a valid float or the string 'keep'.
+    """
     if temp_or_field.lower() == "keep":
         return None
     else:
         return float(temp_or_field)
 
 
+# The magnet devices shortened and longer forms
 magnet_devices = {"ZF": "Active ZF", "LF": "Danfysik", "TF": "T20 Coils"}
 
 
-# Convert to magnet device type if possible, if not they have input an incorrect magnet_device
-# Raise a ValueError and this will be caught and displayed to the user that the conversion is incorrect
 def magnet_device_type(magnet_device):
+    """
+    Take the shortened magnet selection input e.g. ZF, LF or TF and cast it to the
+     required string i.e. Active ZF, Danfysik, T20 Coils.
+    Allows N/A to be selected for when we aren't setting a magnet point or scan.
+
+    Parameters:
+      magnet_device (str): The  selected magnet to cast
+
+    Returns:
+      str: The magnet string to select
+
+    Raises:
+      ValueError: If the input is not ZF, LF, TF or N/A. Allows the conversion error to be
+       caught and displayed to the user.
+    """
     magnet_device = magnet_device.upper()
     if magnet_device in magnet_devices.keys():
         return magnet_devices[magnet_device]
     elif magnet_device == "N/A":
         return magnet_device
     raise ValueError("Magnet device must be one of {} or N/A".format(magnet_devices))
-
-
-# Cast the custom python expression to a string or None if empty
-def cast_custom_expression(expression):
-    if expression == "":
-        return "None"
-    else:
-        return expression
 
 
 class DoRun(ActionDefinition):
