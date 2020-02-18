@@ -132,14 +132,13 @@ If the field is zero magnet device must be ZF.\n
             self.set_magnet_device(magnet_device, inst)
         # Execute a custom command
         eval(custom)
-        # If we are only setting once set it
+        # If we are not scanning the temp/field but still setting once, set them
         if temp_set_definition == SetDefinition.POINT:
             inst.settemp(start_field, wait=True)
         if field_set_definition == SetDefinition.POINT:
             inst.setmag(start_field, wait=True)
-        # Run scans for both the temperature and the field
         if temp_set_definition == SetDefinition.SCAN and field_set_definition == SetDefinition.SCAN:
-            # When we are scanning both temperature and field do all combinations
+            # When we are running scans for both temperature and field do all combinations
             self.run_temp_and_field_scans(start_temperature, stop_temperature, step_temperature,
                                           start_field, stop_field, step_field, mevents, inst)
         elif temp_set_definition == SetDefinition.SCAN:  # Run scans for the temperature
@@ -151,17 +150,43 @@ If the field is zero magnet device must be ZF.\n
             self.check_mevents_and_begin_waitfor_mevents_end(mevents)
 
     def check_mevents_and_begin_waitfor_mevents_end(self, mevents):
+        """
+        If mevents are more than zero do a run and wait for the mevents in that run.
+
+        Parameters:
+          mevents (int): The millions of events to wait for.
+        """
         if mevents > 0:
             g.begin(quiet=True)
             g.waitfor_mevents(mevents)
             g.end(quiet=True)
 
     def set_magnet_device(self, magnet_device, inst):
+        """
+        Use the instrument scripts to set the magnet device, given a string.
+
+        Parameters:
+          magnet_device (str): The string representation of the magnet device to select.
+          inst (module): The instrument scripts module to set the magnet device with.
+        """
         magnet_to_function_map = {"Active ZF": inst.f0, "Danfysik": inst.lf0, "T20 Coils": inst.tf0}
         if g.cget("a_selected_magnet")["value"] != magnet_device:
             magnet_to_function_map[magnet_device]()
 
     def check_set_definition(self, start_temp_or_field, stop_temp_or_field):
+        """
+        Check if we are running a scan, doing one set (a point) or not setting at all.
+
+        Parameters:
+          start_temp_or_field (float): The value to start a scan with or set once
+          stop_temp_or_field (float): The value to end a scan with
+
+        Returns:
+          SetDefinition:
+           UNDEFINED is either start or stop is None.
+           POINT if start and stop are equal.
+           SCAN if they are not equal.
+        """
         if start_temp_or_field is None or stop_temp_or_field is None:
             return SetDefinition.UNDEFINED
         elif start_temp_or_field == stop_temp_or_field:
@@ -171,11 +196,34 @@ If the field is zero magnet device must be ZF.\n
 
     def run_temp_and_field_scans(self, start_temperature, stop_temperature, step_temperature,
                                  start_field, stop_field, step_field, mevents, inst):
+        """
+        Run scans for both the temperature and field.
+
+        Parameters:
+          start_temperature (float): The temperature to start the temperature scan with.
+          stop_temperature (float): The temperature to end the temperature scan with (inclusive).
+          step_temperature (float): The size of the steps to take to go from start_temperature to stop_temperature.
+          start_field (float): The field to start the field scan with.
+          stop_field (float): The field to end the field scan with (inclusive).
+          step_field (float): The size of the steps to take to go from start_field to stop_field.
+          mevents (int): The amount of millions of events to wait for in each run.
+          inst (module): The instrument scripts module to set the temperature and field with.
+        """
         for temp in inclusive_float_range_with_step_flip(start_temperature, stop_temperature, step_temperature):
             inst.settemp(temp, wait=True)
             self.run_scans(start_field, stop_field, step_field, mevents, inst.setmag)
 
     def run_scans(self, start, stop, step, mevents, set_parameter_func):
+        """
+        Run a scan for the given set_parameter_func
+
+        Parameters:
+          start (float): The value to start the scan with.
+          stop (float): The value to end the scan with.
+          step (float): The size of the steps to take from start to stop.
+          mevents (int): The amount of millions of events to wait for in each run.
+          set_parameter_func (function): A function to call to set the value with each step of the scan.
+        """
         for var in inclusive_float_range_with_step_flip(start, stop, step):
             set_parameter_func(var, wait=True)
             self.check_mevents_and_begin_waitfor_mevents_end(mevents)
@@ -203,12 +251,35 @@ If the field is zero magnet device must be ZF.\n
             return None
 
     def check_keep_in_neither_or_both(self, start, stop, variable_name):
+        """
+        Check that start and stop are either both None or both values.
+
+        Parameters:
+          start (float): The start value of a scan.
+          stop (float): The end value of a scan.
+          variable_name (str): The name of the variable we are checking (e.g. temperature or field).
+
+        Returns:
+          str: An empty string if start and stop are valid, or a string containing a reason why they are not.
+        """
         if (start is None and stop is not None) or (stop is None and start is not None):
             return "If start {0} or stop {0} is keep, the other must also be keep\n".format(variable_name)
         else:
             return ""
 
     def check_step_set_correctly(self, start, stop, step, variable_name):
+        """
+        If we are scanning check that the step is positive and not zero.
+
+        Parameters:
+          start (float): The start value of a scan.
+          stop (float): The end value of a scan.
+          step (float): The size of the steps to take from start to stop.
+          variable_name (str): The name of the variable we are checking (e.g. temperature or field).
+
+        Returns:
+          str: An empty string if valid, or a string containing a reason why they are not.
+        """
         reason = ""
         set_definition = self.check_set_definition(start, stop)
         if set_definition == SetDefinition.SCAN:
@@ -220,6 +291,20 @@ If the field is zero magnet device must be ZF.\n
         return reason
 
     def check_magnet_selected_correctly(self, start_field, stop_field, magnet_device):
+        """
+        If we are setting a field check:
+         - The magnet device that has been selected is a valid one i.e. one of our listed magnet devices
+         - If the field is zero we are using the active zero field device
+         - If the field is not zero we are not using the the active zero field device
+
+        Parameters:
+          start_field (float): The start value of a field scan.
+          stop_field (float): The start value of a field scan.
+          magnet_device (str): The device we are selecting to use to set the field.
+
+        Returns:
+          str: An empty string if valid, or a string containing a reason why they are not.
+        """
         reason = ""
         field_set_definition = self.check_set_definition(start_field, stop_field)
         if field_set_definition != SetDefinition.UNDEFINED:
