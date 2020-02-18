@@ -1,41 +1,79 @@
 from genie_python.genie_script_generator import ActionDefinition, cast_parameters_to
 from genie_python import genie as g
-from importlib import import_module
 import numpy as np
 from enum import Enum
 
 
 class SetDefinition(Enum):
+    """
+    Describes how we are setting a temperature or field.
+    POINT means set once.
+    SCAN means set a number of values by scanning through a set of values.
+    UNDEFINED means not to set the temperature or field.
+    """
     UNDEFINED = 1
     POINT = 2
     SCAN = 3
 
 
-# Allow the user to right keep in temp or field to use the current value
 def float_or_keep(temp_or_field):
+    """
+    Convert the input to a float or None if the input is keep (to allow not changing of a temperature or field).
+
+    Parameters:
+      temp_or_field (str): The temperature or field to cast
+
+    Returns:
+      float: The casted input. Will be None if temp_or_field  is 'keep'.
+
+    Raises:
+      ValueError: When temp_or_field is not either a valid float or the string 'keep'.
+    """
     if temp_or_field.lower() == "keep":
         return None
     else:
         return float(temp_or_field)
 
 
+# The magnet devices shortened and longer forms
 magnet_devices = {"ZF": "Active ZF", "LF": "Danfysik", "TF": "T20 Coils"}
 
 
-# Convert to magnet device type if possible, if not they have input an incorrect magnet_device
-# Raise a ValueError and this will be caught and displayed to the user that the conversion is incorrect
 def magnet_device_type(magnet_device):
+    """
+    Take the shortened magnet selection input e.g. ZF, LF or TF and cast it to the
+     required string i.e. Active ZF, Danfysik, T20 Coils.
+    Allows N/A to be selected for when we aren't setting a magnet point or scan.
+
+    Parameters:
+      magnet_device (str): The  selected magnet to cast
+
+    Returns:
+      str: The magnet string to select
+
+    Raises:
+      ValueError: If the input is not ZF, LF, TF or N/A. Allows the conversion error to be
+       caught and displayed to the user.
+    """
     magnet_device = magnet_device.upper()
     if magnet_device in magnet_devices.keys():
         return magnet_devices[magnet_device]
     elif magnet_device == "N/A":
         return magnet_device
-    raise ValueError("Magnet device must be one of {} or N/A".format(magnet_devices))
+    raise ValueError("Magnet device must be one of {} or N/A".format(magnet_devices.keys()))
 
 
-# Cast the custom python expression to a string or None if empty
 def cast_custom_expression(expression):
-    if expression == "":
+    """
+    Ensure a custom python expression is not empty (this will cause an error) by filling it with None (does nothing).
+
+    Parameters:
+      expression (str): The expression to cast
+
+    Returns:
+      str: The python expression to run (the same as the expression param unless that is the empty string
+    """
+    if expression.lstrip() == "":
         return "None"
     else:
         return expression
@@ -92,46 +130,25 @@ If the field is zero magnet device must be ZF.\n
         import inst
         if field_set_definition != SetDefinition.UNDEFINED:
             self.set_magnet_device(magnet_device, inst)
+        # Execute a custom command
+        eval(custom)
+        if field_set_definition == SetDefinition.POINT:
+            inst.setmag(start_field, wait=True)
+        if temp_set_definition == SetDefinition.POINT:
+            inst.settemp(start_field, wait=True)
         # Run scans for both the temperature and the field
         if temp_set_definition == SetDefinition.SCAN and field_set_definition == SetDefinition.SCAN:
-            # Evaluate the user command before scanning
-            eval(custom)
             # When we are scanning both temperature and field do all combinations
             self.run_temp_and_field_scans(start_temperature, stop_temperature, step_temperature,
                                           start_field, stop_field, step_field, mevents, inst)
         elif temp_set_definition == SetDefinition.SCAN:  # Run scans for the temperature
-            # Evaluate the user command before scanning
-            eval(custom)
-            # Set the field to use for all the scans
-            if field_set_definition == SetDefinition.POINT:
-                inst.setmag(start_field, wait=True)
             self.run_scans(start_temperature, stop_temperature, step_temperature, mevents, inst.settemp)
         elif field_set_definition == SetDefinition.SCAN:  # Run scans for the field
-            # Evaluate the user command before scanning
-            eval(custom)
-            # Set the temperature to use for all the scans
-            if temp_set_definition == SetDefinition.POINT:
-                inst.settemp(start_temperature, wait=True)
             self.run_scans(start_field, stop_field, step_field, mevents, inst.setmag)
-        elif field_set_definition == SetDefinition.POINT and temp_set_definition == SetDefinition.POINT:
-            # Set the temperature and the field once each and do a run (if mevents > 0)
-            eval(custom)
-            inst.settemp(start_temperature, wait=True)
-            inst.setmag(start_field, wait=True)
-            self.begin_waitfor_mevents_end(mevents)
-        elif field_set_definition == SetDefinition.POINT:
-            eval(custom)
-            inst.setmag(start_field, wait=True)
-            self.begin_waitfor_mevents_end(mevents)
-        elif temp_set_definition == SetDefinition.POINT:
-            eval(custom)
-            inst.settemp(start_field, wait=True)
-            self.begin_waitfor_mevents_end(mevents)
         else:
-            # Do a run without setting (if mevents > 0)
-            self.begin_waitfor_mevents_end(mevents)
+            self.check_mevents_and_begin_waitfor_mevents_end(mevents)
 
-    def begin_waitfor_mevents_end(self, mevents):
+    def check_mevents_and_begin_waitfor_mevents_end(self, mevents):
         if mevents > 0:
             g.begin(quiet=True)
             g.waitfor_mevents(mevents)
@@ -154,15 +171,12 @@ If the field is zero magnet device must be ZF.\n
                                  start_field, stop_field, step_field, mevents, inst):
         for temp in inclusive_float_range_with_step_flip(start_temperature, stop_temperature, step_temperature):
             inst.settemp(temp, wait=True)
-            for field in inclusive_float_range_with_step_flip(start_field, stop_field, step_field):
-                inst.setmag(field, wait=True)
-                # Do a run for this mag and temp
-                self.begin_waitfor_mevents_end(mevents)
+            self.run_scans(start_field, stop_field, step_field, mevents, inst.setmag)
 
-    def run_scans(self, start_temperature, stop_temperature, step_temperature, mevents, set_parameter_func):
-        for temp in inclusive_float_range_with_step_flip(start_temperature, stop_temperature, step_temperature):
-            set_parameter_func(temp, wait=True)
-            self.begin_waitfor_mevents_end(mevents)
+    def run_scans(self, start, stop, step, mevents, set_parameter_func):
+        for var in inclusive_float_range_with_step_flip(start, stop, step):
+            set_parameter_func(var, wait=True)
+            self.check_mevents_and_begin_waitfor_mevents_end(mevents)
 
     # Check to see if the provided parameters are valid
     @cast_parameters_to(
@@ -177,25 +191,32 @@ If the field is zero magnet device must be ZF.\n
         reason = ""
         if (start_temperature is None and stop_temperature is not None) or (stop_temperature is None and start_temperature is not None):
             reason += "If start temperature or stop_temperature is keep, the other must also be keep\n"
-        is_temp_scan_defined = start_temperature is not None and stop_temperature is not None
-        if is_temp_scan_defined:
-            # We need to step thorugh at some rate
-            if start_temperature != stop_temperature and step_temperature <= 0.0:
+        temp_set_definition = self.check_set_definition(start_temperature, stop_temperature)
+        if temp_set_definition == SetDefinition.SCAN:
+            # We need to step through at some rate
+            if step_temperature == 0.0:
                 reason += "Cannot step through temperatures when step is zero\n"
+            elif step_temperature < 0.0:
+                reason += "Step temperature must be positive\n"
         if (start_field is None and stop_field is not None) or (stop_field is None and start_field is not None):
             reason += "If start field or stop field is keep, the other must also be keep\n"
-        is_field_scan_defined = start_field is not None and stop_field is not None
-        if is_field_scan_defined:
-            # If we are defining a field scan we need to set the magnet
+        field_set_definition = self.check_set_definition(start_field, stop_field)
+        if field_set_definition != SetDefinition.UNDEFINED:
+            # If we are setting a field we need to set the magnet device to use
             if magnet_device not in magnet_devices.values():
-                reason += "Field set but magnet devices {} not in possible devices {}\n".format(magnet_device, list(magnet_devices.keys()))
-            if start_field != stop_field and step_field <= 0.0:
-                reason += "Cannot step through fields when step is zero\n"
+                reason += "Field set but magnet devices {} not in possible devices {}\n".format(
+                    magnet_device, magnet_devices.keys())
             # Only the zero field can set a field of zero
             if (np.isclose(start_field, 0.0) or np.isclose(stop_field, 0.0)) and magnet_device != self.active_zf:
-                reason += "Trying to set a zero field without using the active zero field ({}, {})\n".format(magnet_device, self.active_zf)
-            if not (np.isclose(start_field, 0.0) or not np.isclose(stop_field, 0.0)) and magnet_device == self.active_zf:
-                reason += "When setting a zero field must use ZF\n"
+                reason += "Trying to set a zero field without using the active zero field ({}, {})\n".format(
+                    magnet_device, self.active_zf)
+            if (not np.isclose(start_field, 0.0) or not np.isclose(stop_field, 0.0)) and magnet_device == self.active_zf:
+                reason += "Cannot set a non-zero field with the active zero field\n"
+        if field_set_definition == SetDefinition.SCAN:
+            if step_field == 0.0:
+                reason += "Cannot step through fields when step is zero\n"
+            elif step_field < 0.0:
+                reason += "Step field must be positive\n"
         # If there is no reason return None i.e. the parameters are valid
         if reason != "":
             return reason
