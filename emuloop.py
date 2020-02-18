@@ -118,7 +118,7 @@ If the field is zero magnet device must be ZF.\n
     @cast_parameters_to(
          start_temperature=float_or_keep, stop_temperature=float_or_keep, step_temperature=float,
          start_field=float_or_keep, stop_field=float_or_keep, step_field=float, 
-         custom=cast_custom_expression, mevents=int, magnet_device=magnet_device_type)
+         custom=cast_custom_expression, mevents=float, magnet_device=magnet_device_type)
     def run(self,
             start_temperature=1.0, stop_temperature=1.0, step_temperature=10,
             start_field=1.0, stop_field=1.0, step_field=1.0,
@@ -154,7 +154,7 @@ If the field is zero magnet device must be ZF.\n
         If mevents are more than zero do a run and wait for the mevents in that run.
 
         Parameters:
-          mevents (int): The millions of events to wait for.
+          mevents (float): The millions of events to wait for.
         """
         if mevents > 0:
             g.begin(quiet=True)
@@ -206,7 +206,7 @@ If the field is zero magnet device must be ZF.\n
           start_field (float): The field to start the field scan with.
           stop_field (float): The field to end the field scan with (inclusive).
           step_field (float): The size of the steps to take to go from start_field to stop_field.
-          mevents (int): The amount of millions of events to wait for in each run.
+          mevents (float): The amount of millions of events to wait for in each run.
           inst (module): The instrument scripts module to set the temperature and field with.
         """
         for temp in inclusive_float_range_with_step_flip(start_temperature, stop_temperature, step_temperature):
@@ -221,7 +221,7 @@ If the field is zero magnet device must be ZF.\n
           start (float): The value to start the scan with.
           stop (float): The value to end the scan with.
           step (float): The size of the steps to take from start to stop.
-          mevents (int): The amount of millions of events to wait for in each run.
+          mevents (float): The amount of millions of events to wait for in each run.
           set_parameter_func (function): A function to call to set the value with each step of the scan.
         """
         for var in inclusive_float_range_with_step_flip(start, stop, step):
@@ -232,7 +232,7 @@ If the field is zero magnet device must be ZF.\n
     @cast_parameters_to(
          start_temperature=float_or_keep, stop_temperature=float_or_keep, step_temperature=float,
          start_field=float_or_keep, stop_field=float_or_keep, step_field=float, 
-         custom=cast_custom_expression, mevents=int, magnet_device=magnet_device_type)
+         custom=cast_custom_expression, mevents=float, magnet_device=magnet_device_type)
     def parameters_valid(self,
                          start_temperature=1.0, stop_temperature=1.0, step_temperature=1.0,
                          start_field=1.0, stop_field=1.0, step_field=1.0,
