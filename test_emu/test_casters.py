@@ -1,6 +1,7 @@
 from emu import magnet_device_type, magnet_devices, float_or_keep, cast_custom_expression
 from emuloop import magnet_device_type as magnet_device_type_loop, magnet_devices as magnet_devices_loop
 from emuloop import float_or_keep as float_or_keep_loop, cast_custom_expression as cast_custom_expression_loop
+
 import unittest
 import numpy as np
 

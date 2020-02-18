@@ -2,6 +2,7 @@ from genie_python.genie_script_generator import ActionDefinition, cast_parameter
 from genie_python import genie as g
 from importlib import import_module
 
+
 # Allow the user to right keep in temp or field to use the current value
 def float_or_keep(temp_or_field):
     if temp_or_field.lower() == "keep":
@@ -42,7 +43,7 @@ If the field is zero magnet device must be ZF.\n
 
     @cast_parameters_to(temperature=float_or_keep, field=float_or_keep, mevents=int, magnet_device=magnet_device_type)
     def run(self, temperature=1.0, field=1.0, mevents=10, magnet_device="N/A"):
-        inst = import_module("inst")
+        import inst
         # Don't set temp if the user has specified keep
         if temperature is not None:
             inst.settemp(temperature, wait=True)
