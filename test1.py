@@ -1,12 +1,18 @@
 from genie_python.genie_script_generator import ActionDefinition
 
+
 class DoRun(ActionDefinition):
     def run(self, field1="1", field2="2"):
         pass
 
     def parameters_valid(self, field1="1", field2="2"):
-        if field1 != "1" and field2 != "2":
-            return "field 1 must be 1 and field 2 must be 2"
+        reason = ""
+        if field1 != "1":
+            reason += "field 1 must be 1\n"
+        if field2 != "2":
+            reason += "field 2 must be 2\n"
+        if reason != "":
+            return reason
         else:
             return None
 
