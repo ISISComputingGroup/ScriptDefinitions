@@ -1,4 +1,4 @@
-from genie_python.genie_script_generator import ActionDefinition, cast_parameters_to
+from genie_python.genie_script_generator import ScriptDefinition, cast_parameters_to
 from genie_python import genie as g
 
 def mytype(string_input):
@@ -8,7 +8,7 @@ def mytype(string_input):
         return float(string_input)
 
 
-class DoRun(ActionDefinition):
+class DoRun(ScriptDefinition):
 
     @cast_parameters_to(temperature=float, field=float, uamps=mytype)
     def run(self, temperature=0.0, field=0.0, uamps=0.0):
