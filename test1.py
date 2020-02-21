@@ -1,7 +1,7 @@
-from genie_python.genie_script_generator import ActionDefinition
+from genie_python.genie_script_generator import ScriptDefinition
 
 
-class DoRun(ActionDefinition):
+class DoRun(ScriptDefinition):
     def run(self, field1="1", field2="2"):
         pass
 
@@ -17,4 +17,4 @@ class DoRun(ActionDefinition):
             return None
 
     def get_help(self):
-        return None
+        return "This is my help for test1"
