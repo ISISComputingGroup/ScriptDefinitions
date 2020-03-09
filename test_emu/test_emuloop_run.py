@@ -1,14 +1,8 @@
-import six
 from mock import patch, MagicMock
 from emuloop import DoRun, SetDefinition
 import unittest
 
 inst = MagicMock()
-
-if six.PY3:
-    builtin_eval = 'builtins.eval'
-else:
-    builtin_eval = "__builtin__.eval"
 
 
 class TestRun(unittest.TestCase):
@@ -19,7 +13,7 @@ class TestRun(unittest.TestCase):
         inst.reset_mock()
 
     @patch.dict("sys.modules", inst=inst)
-    @patch(builtin_eval)
+    @patch("six.moves.builtins.eval")
     @patch('genie_python.genie.cget', return_value={"value": "A Magnet"})
     def test_GIVEN_both_temp_field_scans_WHEN_run_THEN_scans_run_once_for_each_set(self, _, mock_eval):
         self.script_definition.run(start_temperature="1.0", stop_temperature="10.0", step_temperature="1",
@@ -32,7 +26,7 @@ class TestRun(unittest.TestCase):
         self.assertEqual(self.script_definition.check_mevents_and_begin_waitfor_mevents_end.call_count, 10 * 10)
 
     @patch.dict("sys.modules", inst=inst)
-    @patch(builtin_eval)
+    @patch("six.moves.builtins.eval")
     @patch('genie_python.genie.cget', return_value={"value": "A Magnet"})
     def test_GIVEN_temp_scan_field_point_WHEN_run_THEN_setmag_called_once_AND_scan_runs(self, _, mock_eval):
         self.script_definition.run(start_temperature="1.0", stop_temperature="10.0", step_temperature="1",
@@ -45,7 +39,7 @@ class TestRun(unittest.TestCase):
         self.assertEqual(self.script_definition.check_mevents_and_begin_waitfor_mevents_end.call_count, 10)
 
     @patch.dict("sys.modules", inst=inst)
-    @patch(builtin_eval)
+    @patch("six.moves.builtins.eval")
     @patch('genie_python.genie.cget', return_value={"value": "A Magnet"})
     def test_GIVEN_field_scan_temp_point_WHEN_run_THEN_settemp_called_once_AND_scan_runs(self, _, mock_eval):
         self.script_definition.run(start_temperature="1.0", stop_temperature="1.0", step_temperature="1",
@@ -58,7 +52,7 @@ class TestRun(unittest.TestCase):
         self.assertEqual(self.script_definition.check_mevents_and_begin_waitfor_mevents_end.call_count, 10)
 
     @patch.dict("sys.modules", inst=inst)
-    @patch(builtin_eval)
+    @patch("six.moves.builtins.eval")
     @patch('genie_python.genie.cget', return_value={"value": "A Magnet"})
     def test_GIVEN_both_field_and_temp_points_WHEN_run_THEN_temp_mag_run_called_once(self, _, mock_eval):
         self.script_definition.run(start_temperature="1.0", stop_temperature="1.0", step_temperature="1",
@@ -71,7 +65,7 @@ class TestRun(unittest.TestCase):
         self.script_definition.check_mevents_and_begin_waitfor_mevents_end.assert_called_once()
 
     @patch.dict("sys.modules", inst=inst)
-    @patch(builtin_eval)
+    @patch("six.moves.builtins.eval")
     @patch('genie_python.genie.cget', return_value={"value": "A Magnet"})
     def test_GIVEN_one_of_start_stop_field_is_keep_AND_temp_scan_WHEN_run_THEN_setmag_not_called_AND_temp_scans_run(
             self, _, mock_eval):
@@ -85,7 +79,7 @@ class TestRun(unittest.TestCase):
         self.assertEqual(self.script_definition.check_mevents_and_begin_waitfor_mevents_end.call_count, 10)
 
     @patch.dict("sys.modules", inst=inst)
-    @patch(builtin_eval)
+    @patch("six.moves.builtins.eval")
     @patch('genie_python.genie.cget', return_value={"value": "A Magnet"})
     def test_GIVEN_one_of_start_stop_field_is_keep_AND_temp_point_WHEN_run_THEN_setmag_not_called_AND_temp_set(
             self, _, mock_eval):
@@ -99,7 +93,7 @@ class TestRun(unittest.TestCase):
         self.script_definition.check_mevents_and_begin_waitfor_mevents_end.assert_called_once()
 
     @patch.dict("sys.modules", inst=inst)
-    @patch(builtin_eval)
+    @patch("six.moves.builtins.eval")
     @patch('genie_python.genie.cget', return_value={"value": "A Magnet"})
     def test_GIVEN_one_of_start_stop_temp_is_keep_AND_field_scan_WHEN_run_THEN_settemp_not_called_AND_field_scans_run(
             self, _, mock_eval):
@@ -113,7 +107,7 @@ class TestRun(unittest.TestCase):
         self.assertEqual(self.script_definition.check_mevents_and_begin_waitfor_mevents_end.call_count, 10)
 
     @patch.dict("sys.modules", inst=inst)
-    @patch(builtin_eval)
+    @patch("six.moves.builtins.eval")
     @patch('genie_python.genie.cget', return_value={"value": "A Magnet"})
     def test_GIVEN_one_of_start_stop_temp_is_keep_AND_field_point_WHEN_run_THEN_settemp_not_called_AND_mag_set(
             self, _, mock_eval):
@@ -127,7 +121,7 @@ class TestRun(unittest.TestCase):
         self.script_definition.check_mevents_and_begin_waitfor_mevents_end.assert_called_once()
 
     @patch.dict("sys.modules", inst=inst)
-    @patch(builtin_eval)
+    @patch("six.moves.builtins.eval")
     @patch('genie_python.genie.cget', return_value={"value": "A Magnet"})
     def test_GIVEN_keep_temp_and_field_WHEN_run_THEN_settemp_and_setmag_not_called_AND_begin_waitfor_called_once(
             self, _, mock_eval):

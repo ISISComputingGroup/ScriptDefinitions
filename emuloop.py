@@ -134,7 +134,7 @@ If the field is zero magnet device must be ZF.\n
         eval(custom)
         # If we are not scanning the temp/field but still setting once, set them
         if temp_set_definition == SetDefinition.POINT:
-            inst.settemp(start_field, wait=True)
+            inst.settemp(start_temperature, wait=True)
         if field_set_definition == SetDefinition.POINT:
             inst.setmag(start_field, wait=True)
         # If we are running scans do them
@@ -240,8 +240,8 @@ If the field is zero magnet device must be ZF.\n
                          custom="None",  mevents=10, magnet_device="N/A"):
         # The reason as to why the parameters are not valid
         reason = ""
-        reason += self.check_keep_in_neither_or_both(start_temperature, stop_temperature, "temperature")
-        reason += self.check_keep_in_neither_or_both(start_field, stop_field, "field")
+        reason += self.check_start_and_stop_valid(start_temperature, stop_temperature, "temperature")
+        reason += self.check_start_and_stop_valid(start_field, stop_field, "field")
         reason += self.check_step_set_correctly(start_temperature, stop_temperature, step_temperature, "temperature")
         reason += self.check_step_set_correctly(start_field, stop_field, step_field, "field")
         reason += self.check_magnet_selected_correctly(start_field, stop_field, magnet_device)
@@ -251,7 +251,7 @@ If the field is zero magnet device must be ZF.\n
         else:
             return None
 
-    def check_keep_in_neither_or_both(self, start, stop, variable_name):
+    def check_start_and_stop_valid(self, start, stop, variable_name):
         """
         Check that start and stop are either both None or both values.
 
