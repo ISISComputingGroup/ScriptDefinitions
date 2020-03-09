@@ -1,4 +1,4 @@
-from genie_python.genie_script_generator import ActionDefinition, cast_parameters_to
+from genie_python.genie_script_generator import ScriptDefinition, cast_parameters_to
 from genie_python import genie as g
 from importlib import import_module
 import numpy as np
@@ -29,7 +29,7 @@ def cast_custom_expression(expression):
     else:
         return expression
 
-class DoRun(ActionDefinition):
+class DoRun(ScriptDefinition):
 
     active_zf = "Active ZF"
     possible_magnet_devices = [active_zf, "Danfysik", "T20 Coils"]

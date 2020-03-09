@@ -1,8 +1,8 @@
-from genie_python.genie_script_generator import ActionDefinition, cast_parameters_to
+from genie_python.genie_script_generator import ScriptDefinition, cast_parameters_to
 from genie_python import genie as g
 import numpy as np
 
-class DoRun(ActionDefinition):
+class DoRun(ScriptDefinition):
 
     @cast_parameters_to(start_temp=float, stop_temp=float, step_temp=float)
     def run(self, start_temp=1.0, stop_temp=1.0, step_temp=0.5):
