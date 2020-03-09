@@ -1,7 +1,7 @@
 from emuloop import DoRun, magnet_devices
 import unittest
 
-import parameterized
+from parameterized import parameterized
 
 start_stop_must_both_be_keep_error_message = "If start {0} or stop {0} is keep, the other must also be keep\n"
 
@@ -27,7 +27,7 @@ class TestParameterValidation(unittest.TestCase):
     def setUp(self):
         self.script_definition = DoRun()
 
-    @parameterized.parameterized.expand([
+    @parameterized.expand([
         (
             {
                 "start_temperature": "keep", "stop_temperature": "keep", "step_temperature": "1",
@@ -131,12 +131,16 @@ class TestParameterValidation(unittest.TestCase):
             expected_return
         )
 
-    def test_GIVEN_try_to_set_zero_field_with_danfysik_and_t20_coils_WHEN_validate_THEN_does_not_validate(self):
-        for invalid_magnet, invalid_magnet_name in {"LF": "Danfysik", "TF": "T20 Coils"}.items():
-            self.assertEqual(
-                self.script_definition.parameters_valid(start_temperature="10.5", stop_temperature="1.0",
-                                                        step_temperature="1", start_field="0", stop_field="0",
-                                                        step_field="2", custom="None", mevents="10",
-                                                        magnet_device=invalid_magnet),
-                zero_field_with_non_active_zf_error_message.format(invalid_magnet_name)
-            )
+    @parameterized.expand([
+        ("LF", "Danfysik"),
+        ("TF", "T20 Coils")
+    ])
+    def test_GIVEN_try_to_set_zero_field_with_non_activezf_mag_WHEN_validate_THEN_does_not_validate(
+            self, invalid_magnet, invalid_magnet_name):
+        self.assertEqual(
+            self.script_definition.parameters_valid(start_temperature="10.5", stop_temperature="1.0",
+                                                    step_temperature="1", start_field="0", stop_field="0",
+                                                    step_field="2", custom="None", mevents="10",
+                                                    magnet_device=invalid_magnet),
+            zero_field_with_non_active_zf_error_message.format(invalid_magnet_name)
+        )
