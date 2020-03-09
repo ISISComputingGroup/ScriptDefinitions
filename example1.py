@@ -1,7 +1,7 @@
-from genie_python.genie_script_generator import ActionDefinition
+from genie_python.genie_script_generator import ScriptDefinition
 
 
-class DoRun(ActionDefinition):
+class DoRun(ScriptDefinition):
     def run(self, the="1", imat="2", fields="2", there="2", are="2", more="2"):
         print(the)
         print(imat)

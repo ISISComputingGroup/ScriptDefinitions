@@ -1,4 +1,4 @@
-from genie_python.genie_script_generator import ActionDefinition, cast_parameters_to
+from genie_python.genie_script_generator import ScriptDefinition, cast_parameters_to
 from genie_python import genie as g
 import numpy as np
 
@@ -50,7 +50,7 @@ def magnet_device_type(magnet_device):
     raise ValueError("Magnet device must be one of {} or N/A".format(magnet_devices))
 
 
-class DoRun(ActionDefinition):
+class DoRun(ScriptDefinition):
 
     def get_help(self):
         return """

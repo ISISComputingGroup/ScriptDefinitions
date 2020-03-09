@@ -1,4 +1,4 @@
-from genie_python.genie_script_generator import ActionDefinition, cast_parameters_to
+from genie_python.genie_script_generator import ScriptDefinition, cast_parameters_to
 from genie_python import genie as g
 import numpy as np
 from enum import Enum
@@ -103,7 +103,7 @@ def inclusive_float_range_with_step_flip(start, stop, step):
         yield i
 
 
-class DoRun(ActionDefinition):
+class DoRun(ScriptDefinition):
 
     active_zf = "Active ZF"
     possible_magnet_devices = [active_zf, "Danfysik", "T20 Coils"]
