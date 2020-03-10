@@ -107,12 +107,14 @@ class DoRun(ScriptDefinition):
 
     active_zf = "Active ZF"
     possible_magnet_devices = [active_zf, "Danfysik", "T20 Coils"]
+    
 
     def get_help(self):
         return """
 Magnet device must be one of {} or if the field is KEEP then it can be N/A.\n
 If the field is zero magnet device must be ZF.\n
         """.format(list(magnet_devices.keys()))
+
 
     # Loop through a set of temperatures or fields using a start, stop and step mechanism
     @cast_parameters_to(
