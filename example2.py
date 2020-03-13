@@ -1,6 +1,7 @@
 from genie_python.genie_script_generator import ScriptDefinition, cast_parameters_to
 from genie_python import genie as g
 
+
 def mytype(string_input):
     if string_input == "default":
         return 0.0

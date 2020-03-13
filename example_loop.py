@@ -2,6 +2,7 @@ from genie_python.genie_script_generator import ScriptDefinition, cast_parameter
 from genie_python import genie as g
 import numpy as np
 
+
 class DoRun(ScriptDefinition):
 
     @cast_parameters_to(start_temp=float, stop_temp=float, step_temp=float)
