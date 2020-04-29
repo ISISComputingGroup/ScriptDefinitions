@@ -33,5 +33,14 @@ class DoRun(ScriptDefinition):
         elif start_temp > stop_temp and step_temp > 0.0:
             errors += "Stepping forward when stop temp is lower than start temp\n"
 
+    @cast_parameters_to(start_temp=float, stop_temp=float, step_temp=float)
+    def estimate_time(self, start_temp=1.0, stop_temp=1.0, step_temp=0.5):
+        if stop_temp >= start_temp:
+            steps = round((stop_temp - start_temp) / step_temp)
+            estimated_time = 30 + steps * 30
+            return estimated_time
+        else:
+            return 0
+
     def get_help(self):
         return "An example config to show a looping mechanism"
