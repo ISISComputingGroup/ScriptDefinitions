@@ -101,7 +101,3 @@ If the field is zero magnet device must be ZF.\n
             return reason
         else:
             return None
-
-    @cast_parameters_to(temperature=float_or_keep, field=float_or_keep, mevents=int, magnet_device=magnet_device_type)
-    def estimate_time(self, temperature=1.0, field=1.0, mevents=10, magnet_device="N/A"):
-        return None
