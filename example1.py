@@ -17,7 +17,7 @@ class DoRun(ScriptDefinition):
             return None
 
     def estimate_time(self, the="1", imat="2", fields="2", there="2", are="1", more="2"):
-        return int(the) * int(imat)
+        return float(the) * float(imat)
 
     def get_help(self):
         return None
