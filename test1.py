@@ -16,5 +16,8 @@ class DoRun(ScriptDefinition):
         else:
             return None
 
+    def estimate_time(self, field1="1", field2="2"):
+        return float(field1) * float(field2)
+
     def get_help(self):
         return "This is my help for test1"
