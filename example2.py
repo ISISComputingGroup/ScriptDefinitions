@@ -30,7 +30,11 @@ class DoRun(ScriptDefinition):
             errors += "uamps outside of range"
         if errors != "":
             return errors
-        return None    
+        return None
+
+    @cast_parameters_to(temperature=float, field=float, uamps=mytype)
+    def estimate_time(self, temperature=0.0, field=0.0, uamps=0.0):
+        return uamps
 
     def get_help(self):
         return """
