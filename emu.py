@@ -58,6 +58,9 @@ Magnet device must be one of {} or if the field is KEEP then it can be N/A.\n
 If the field is zero magnet device must be ZF.\n
         """.format(list(magnet_devices.keys()))
 
+    def estimate_time(self, temperature=1.0, field=1.0, mevents=10, magnet_device="N/A"):
+        return 0
+
     @cast_parameters_to(temperature=float_or_keep, field=float_or_keep, mevents=int, magnet_device=magnet_device_type)
     def run(self, temperature=1.0, field=1.0, mevents=10, magnet_device="N/A"):
         import inst

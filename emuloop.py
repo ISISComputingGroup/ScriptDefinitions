@@ -114,6 +114,12 @@ class DoRun(ScriptDefinition):
 Magnet device must be one of {} or if the field is KEEP then it can be N/A.\n
 If the field is zero magnet device must be ZF.\n
         """.format(list(magnet_devices.keys()))
+	
+    def estimate_time(self,
+            start_temperature=1.0, stop_temperature=1.0, step_temperature=10,
+            start_field=1.0, stop_field=1.0, step_field=1.0,
+            custom="None", mevents=10, magnet_device="N/A"):
+        return 0
 
 
     # Loop through a set of temperatures or fields using a start, stop and step mechanism
