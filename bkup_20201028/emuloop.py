@@ -128,8 +128,8 @@ If the field is zero magnet device must be ZF.\n
          start_field=float_or_keep, stop_field=float_or_keep, step_field=float, 
          custom=cast_custom_expression, mevents=float, magnet_device=magnet_device_type)
     def run(self,
-            start_temperature="keep", stop_temperature="keep", step_temperature=0,
-            start_field="keep", stop_field="keep", step_field=0,
+            start_temperature=1.0, stop_temperature=1.0, step_temperature=10,
+            start_field=1.0, stop_field=1.0, step_field=1.0,
             custom="None", mevents=10, magnet_device="N/A"):
         # Scan if start and stop are different, set once if they are equal or do not set if they are None
         temp_set_definition = self.check_set_definition(start_temperature, stop_temperature)

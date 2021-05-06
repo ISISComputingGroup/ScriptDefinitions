@@ -98,10 +98,11 @@ def inclusive_float_range_with_step_flip(start, stop, step):
     """
     if start > stop and step > 0:
         step = -step
-    stop = stop + step
-    for i in np.arange(start, stop, step):
-        yield i
-
+#    stop = stop + step **** This original code can cause the scan to extend beyond the given range
+    vstop = stop + step
+    for i in np.arange(start, vstop, step):
+        if ((i >= start) and (i <= stop)) or ((i >= stop) and (i <= start)):    # Check inserted here to ensure scan remains within defined range
+            yield i
 
 class DoRun(ScriptDefinition):
 
@@ -113,13 +114,34 @@ class DoRun(ScriptDefinition):
         return """
 Magnet device must be one of {} or if the field is KEEP then it can be N/A.\n
 If the field is zero magnet device must be ZF.\n
+The 'Total Estimated Run Time' (etc.) is actually the total number of events in the script written as a sexagesimal number\n
+
         """.format(list(magnet_devices.keys()))
-	
+
+    @cast_parameters_to(
+         start_temperature=float_or_keep, stop_temperature=float_or_keep, step_temperature=float,
+         start_field=float_or_keep, stop_field=float_or_keep, step_field=float, 
+         custom=cast_custom_expression, mevents=float, magnet_device=magnet_device_type)	
     def estimate_time(self,
-            start_temperature=1.0, stop_temperature=1.0, step_temperature=10,
-            start_field=1.0, stop_field=1.0, step_field=1.0,
+            start_temperature="keep", stop_temperature="keep", step_temperature=0,
+            start_field="keep", stop_field="keep", step_field=0,
             custom="None", mevents=10, magnet_device="N/A"):
-        return 0
+        # Scan if start and stop are different, set once if they are equal or do not set if they are None
+        temp_set_definition = self.check_set_definition(start_temperature, stop_temperature)
+        field_set_definition = self.check_set_definition(start_field, stop_field)
+        if (temp_set_definition == SetDefinition.SCAN):
+            temp_pts = 0
+            for i in inclusive_float_range_with_step_flip(start_temperature, stop_temperature, step_temperature):
+                temp_pts += 1
+        else:
+            temp_pts = 1
+        if (field_set_definition == SetDefinition.SCAN):
+            field_pts = 0
+            for i in inclusive_float_range_with_step_flip(start_field, stop_field, step_field):
+                field_pts += 1
+        else:
+            field_pts = 1
+        return float(mevents) * float(temp_pts) * float(field_pts)
 
 
     # Loop through a set of temperatures or fields using a start, stop and step mechanism
