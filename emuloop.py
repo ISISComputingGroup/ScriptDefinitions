@@ -37,6 +37,7 @@ def float_or_keep(temp_or_field):
 
 # The magnet devices shortened and longer forms
 magnet_devices = {"ZF": "Active ZF", "LF": "Danfysik", "TF": "T20 Coils"}
+magnet_not_applicable = "N/A"
 
 
 def magnet_device_type(magnet_device):
@@ -58,7 +59,7 @@ def magnet_device_type(magnet_device):
     magnet_device = magnet_device.upper()
     if magnet_device in magnet_devices.keys():
         return magnet_devices[magnet_device]
-    elif magnet_device == "N/A":
+    elif magnet_device == magnet_not_applicable:
         return magnet_device
     raise ValueError("Magnet device must be one of {} or N/A".format(list(magnet_devices.keys())))
 
@@ -253,6 +254,7 @@ If the field is zero magnet device must be ZF.\n
         reason += self.check_step_set_correctly(start_temperature, stop_temperature, step_temperature, "temperature")
         reason += self.check_step_set_correctly(start_field, stop_field, step_field, "field")
         reason += self.check_magnet_selected_correctly(start_field, stop_field, magnet_device)
+        reason += self.check_if_start_or_stop_field_are_keep_then_magnet_is_na(start_field, stop_field, magnet_device)
         # If there is no reason return None i.e. the parameters are valid
         if reason != "":
             return reason
@@ -275,6 +277,24 @@ If the field is zero magnet device must be ZF.\n
             return "If start {0} or stop {0} is keep, the other must also be keep\n".format(variable_name)
         else:
             return ""
+    
+    def check_if_start_or_stop_field_are_keep_then_magnet_is_na(self, start_field, stop_field, magnet):
+      """
+      Check that if the start or stop fields are keep then the magnet is set to N/A
+
+      Parameters:
+          start_field (float): The start value of a scan.
+          stop_field (float): The end value of a scan.
+          magnet (str): The magnet device selected.
+
+        Returns:
+          str: A string to raise awareness of invalidity if start or stop are "keep" and the magnet is not N/A, 
+           or an empty string to show they are valid. 
+      """
+      if (start_field is None or stop_field is None) and magnet != magnet_not_applicable:
+        return "If start_field or stop_field is keep, then the selected magnet must be N/A".format()
+      else:
+        return ""
 
     def check_step_set_correctly(self, start, stop, step, variable_name):
         """
