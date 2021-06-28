@@ -7,13 +7,13 @@ class DoRun(ScriptDefinition):
                                             "example param 3:": ("any string", str)})
 
     def run(self, to_print="hello"):
-        print(to_print)
+        print(self.global_params["example param 3:"])
 
     def parameters_valid(self, to_print="hello"):
-        return self.global_params["example param:"] == 1
+        pass
             
     def estimate_time(self, to_print="hello"):
-        return self.global_params["example param 2:"]
+        return int(self.global_params["example param 2:"])
 
     def get_help(self):
         return "This is my help for test_dynamic_scripting"
