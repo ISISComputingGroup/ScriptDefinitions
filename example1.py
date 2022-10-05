@@ -5,6 +5,7 @@ class DoRun(ScriptDefinition):
 
     global_params_definition = OrderedDict({"example param:": ("0", int), "example param 2:": ("2", float),
                                             "example param 3:": ("any string", str)})
+    custom_outputs = OrderedDict({"custom1": 10, "custom2": 20})
 
     def run(self, the="1", imat="2", fields="2", there="2", are="2", more="2"):
         print(the)
@@ -25,3 +26,6 @@ class DoRun(ScriptDefinition):
 
     def get_help(self):
         return None
+
+    def estimate_custom(self, the="1", imat="2", fields="2", there="2", are="1", more="2"):
+        return [self.global_params["example param 2:"] * self.custom_outputs["custom1"], int(imat) * 15]
