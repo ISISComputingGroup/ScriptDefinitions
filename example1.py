@@ -1,11 +1,10 @@
-from genie_python.genie_script_generator import ScriptDefinition
+from genie_python.genie_script_generator import ScriptDefinition, cast_parameters_to
 from collections import OrderedDict
 
 class DoRun(ScriptDefinition):
 
     global_params_definition = OrderedDict({"example param:": ("0", int), "example param 2:": ("2", float),
                                             "example param 3:": ("any string", str)})
-    custom_outputs = OrderedDict({"custom1": 10, "custom2": 20})
 
     def run(self, the="1", imat="2", fields="2", there="2", are="2", more="2"):
         print(the)
@@ -27,5 +26,8 @@ class DoRun(ScriptDefinition):
     def get_help(self):
         return None
 
+    @cast_parameters_to(the=float, imat=float, fields=float, there=float, are=float, more=float)
     def estimate_custom(self, the="1", imat="2", fields="2", there="2", are="1", more="2"):
-        return [self.global_params["example param 2:"] * self.custom_outputs["custom1"], int(imat) * 15]
+        custom1 = the * 2
+        custom2 = imat + 5
+        return OrderedDict([("custom1", str(custom1)), ("custom2", str(custom2))])
