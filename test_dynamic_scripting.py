@@ -3,6 +3,7 @@ from genie_python.genie_script_generator import ScriptDefinition
 
 class DoRun(ScriptDefinition):
     def run(self, to_print="hello"):
+        sleep(10)
         print(to_print)
 
     def parameters_valid(self, to_print="hello"):
