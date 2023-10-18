@@ -9,7 +9,7 @@ class DoRun(ScriptDefinition):
     enum_params = ["process_status"]
     class process_status_enum(Enum):
         ok = 1
-        not_okay = 2
+        still_okay = 2
         definitely_not_okay = 3
 
 
@@ -19,7 +19,7 @@ class DoRun(ScriptDefinition):
     @cast_parameters_to(process_status=str)
     def parameters_valid(self, process_status="ok"):
         # check that the enum value of process_status is ok
-        if self.process_status_enum[process_status] != self.process_status_enum.ok:
+        if self.process_status_enum[process_status] == self.process_status_enum.definitely_not_okay:
             return "process_status must be ok"
 
     def estimate_time(self, process_status="ok"):
