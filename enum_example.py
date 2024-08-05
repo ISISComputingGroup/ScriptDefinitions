@@ -1,17 +1,15 @@
-from genie_python.genie_script_generator import ScriptDefinition, cast_parameters_to
-
 from enum import Enum
+
+from genie_python.genie_script_generator import ScriptDefinition, cast_parameters_to
 
 
 class DoRun(ScriptDefinition):
-    
-
     enum_params = ["process_status"]
+
     class process_status_enum(Enum):
         ok = 1
         still_okay = 2
         definitely_not_okay = 3
-
 
     def run(self, process_status="not_working"):
         print("Running do_run with process_status: " + process_status)

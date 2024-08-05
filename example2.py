@@ -1,5 +1,5 @@
-from genie_python.genie_script_generator import ScriptDefinition, cast_parameters_to
 from genie_python import genie as g
+from genie_python.genie_script_generator import ScriptDefinition, cast_parameters_to
 
 
 def mytype(string_input):
@@ -10,7 +10,6 @@ def mytype(string_input):
 
 
 class DoRun(ScriptDefinition):
-
     @cast_parameters_to(temperature=float, field=float, uamps=mytype)
     def run(self, temperature=0.0, field=0.0, uamps=0.0):
         g.cset("temperature", temperature)
