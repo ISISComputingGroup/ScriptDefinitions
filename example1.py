@@ -4,9 +4,13 @@ from genie_python.genie_script_generator import ScriptDefinition, cast_parameter
 
 
 class DoRun(ScriptDefinition):
-
-    global_params_definition = OrderedDict({"example param:": ("0", int), "example param 2:": ("2", float),
-                                            "example param 3:": ("any string", str)})
+    global_params_definition = OrderedDict(
+        {
+            "example param:": ("0", int),
+            "example param 2:": ("2", float),
+            "example param 3:": ("any string", str),
+        }
+    )
 
     def run(self, the="1", imat="2", fields="2", there="2", are="2", more="2"):
         print(the)

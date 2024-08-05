@@ -4,7 +4,6 @@ from emuloop import inclusive_float_range_with_step_flip
 
 
 class TestRange(unittest.TestCase):
-
     def test_GIVEN_float_range_WHEN_get_range_THEN_inclusive_AND_expected_values(self):
         # GIVEN float range
         start, stop, step = 0.5, 2, 0.5

@@ -12,6 +12,7 @@ class SetDefinition(Enum):
     SCAN means set a number of values by scanning through a set of values.
     UNDEFINED means not to set the temperature or field.
     """
+
     UNDEFINED = 1
     POINT = 2
     SCAN = 3
@@ -100,17 +101,18 @@ def inclusive_float_range_with_step_flip(start, stop, step):
     """
     if start > stop and step > 0:
         step = -step
-#    stop = stop + step **** This original code can cause the scan to extend beyond the given range
+    #    stop = stop + step **** This original code can cause the scan to extend beyond the given range
     vstop = stop + step
     for i in np.arange(start, vstop, step):
-        if ((i >= start) and (i <= stop)) or ((i >= stop) and (i <= start)):    # Check inserted here to ensure scan remains within defined range
+        if ((i >= start) and (i <= stop)) or (
+            (i >= stop) and (i <= start)
+        ):  # Check inserted here to ensure scan remains within defined range
             yield i
 
-class DoRun(ScriptDefinition):
 
+class DoRun(ScriptDefinition):
     active_zf = "Active ZF"
     possible_magnet_devices = [active_zf, "Danfysik", "T20 Coils"]
-    
 
     def get_help(self):
         return """
@@ -121,23 +123,40 @@ The 'Total Estimated Run Time' (etc.) is actually the total number of events in 
         """.format(list(magnet_devices.keys()))
 
     @cast_parameters_to(
-         start_temperature=float_or_keep, stop_temperature=float_or_keep, step_temperature=float,
-         start_field=float_or_keep, stop_field=float_or_keep, step_field=float, 
-         custom=cast_custom_expression, mevents=float, magnet_device=magnet_device_type)	
-    def estimate_time(self,
-            start_temperature="keep", stop_temperature="keep", step_temperature=0,
-            start_field="keep", stop_field="keep", step_field=0,
-            custom="None", mevents=10, magnet_device="N/A"):
+        start_temperature=float_or_keep,
+        stop_temperature=float_or_keep,
+        step_temperature=float,
+        start_field=float_or_keep,
+        stop_field=float_or_keep,
+        step_field=float,
+        custom=cast_custom_expression,
+        mevents=float,
+        magnet_device=magnet_device_type,
+    )
+    def estimate_time(
+        self,
+        start_temperature="keep",
+        stop_temperature="keep",
+        step_temperature=0,
+        start_field="keep",
+        stop_field="keep",
+        step_field=0,
+        custom="None",
+        mevents=10,
+        magnet_device="N/A",
+    ):
         # Scan if start and stop are different, set once if they are equal or do not set if they are None
         temp_set_definition = self.check_set_definition(start_temperature, stop_temperature)
         field_set_definition = self.check_set_definition(start_field, stop_field)
-        if (temp_set_definition == SetDefinition.SCAN):
+        if temp_set_definition == SetDefinition.SCAN:
             temp_pts = 0
-            for i in inclusive_float_range_with_step_flip(start_temperature, stop_temperature, step_temperature):
+            for i in inclusive_float_range_with_step_flip(
+                start_temperature, stop_temperature, step_temperature
+            ):
                 temp_pts += 1
         else:
             temp_pts = 1
-        if (field_set_definition == SetDefinition.SCAN):
+        if field_set_definition == SetDefinition.SCAN:
             field_pts = 0
             for i in inclusive_float_range_with_step_flip(start_field, stop_field, step_field):
                 field_pts += 1
@@ -145,21 +164,36 @@ The 'Total Estimated Run Time' (etc.) is actually the total number of events in 
             field_pts = 1
         return float(mevents) * float(temp_pts) * float(field_pts)
 
-
     # Loop through a set of temperatures or fields using a start, stop and step mechanism
     @cast_parameters_to(
-         start_temperature=float_or_keep, stop_temperature=float_or_keep, step_temperature=float,
-         start_field=float_or_keep, stop_field=float_or_keep, step_field=float, 
-         custom=cast_custom_expression, mevents=float, magnet_device=magnet_device_type)
-    def run(self,
-            start_temperature="keep", stop_temperature="keep", step_temperature=0,
-            start_field="keep", stop_field="keep", step_field=0,
-            custom="None", mevents=10, magnet_device="N/A"):
+        start_temperature=float_or_keep,
+        stop_temperature=float_or_keep,
+        step_temperature=float,
+        start_field=float_or_keep,
+        stop_field=float_or_keep,
+        step_field=float,
+        custom=cast_custom_expression,
+        mevents=float,
+        magnet_device=magnet_device_type,
+    )
+    def run(
+        self,
+        start_temperature="keep",
+        stop_temperature="keep",
+        step_temperature=0,
+        start_field="keep",
+        stop_field="keep",
+        step_field=0,
+        custom="None",
+        mevents=10,
+        magnet_device="N/A",
+    ):
         # Scan if start and stop are different, set once if they are equal or do not set if they are None
         temp_set_definition = self.check_set_definition(start_temperature, stop_temperature)
         field_set_definition = self.check_set_definition(start_field, stop_field)
         # Use the instrument scripts to set the magnet device correctly
         import inst
+
         if field_set_definition != SetDefinition.UNDEFINED:
             self.set_magnet_device(magnet_device, inst)
         # Execute a custom command
@@ -172,10 +206,20 @@ The 'Total Estimated Run Time' (etc.) is actually the total number of events in 
         # If we are running scans do them
         if temp_set_definition == SetDefinition.SCAN and field_set_definition == SetDefinition.SCAN:
             # When we are running scans for both temperature and field do all combinations
-            self.run_temp_and_field_scans(start_temperature, stop_temperature, step_temperature,
-                                          start_field, stop_field, step_field, mevents, inst)
+            self.run_temp_and_field_scans(
+                start_temperature,
+                stop_temperature,
+                step_temperature,
+                start_field,
+                stop_field,
+                step_field,
+                mevents,
+                inst,
+            )
         elif temp_set_definition == SetDefinition.SCAN:  # Run scans for the temperature
-            self.run_scans(start_temperature, stop_temperature, step_temperature, mevents, inst.settemp)
+            self.run_scans(
+                start_temperature, stop_temperature, step_temperature, mevents, inst.settemp
+            )
         elif field_set_definition == SetDefinition.SCAN:  # Run scans for the field
             self.run_scans(start_field, stop_field, step_field, mevents, inst.setmag)
         else:
@@ -227,8 +271,17 @@ The 'Total Estimated Run Time' (etc.) is actually the total number of events in 
         else:
             return SetDefinition.SCAN
 
-    def run_temp_and_field_scans(self, start_temperature, stop_temperature, step_temperature,
-                                 start_field, stop_field, step_field, mevents, inst):
+    def run_temp_and_field_scans(
+        self,
+        start_temperature,
+        stop_temperature,
+        step_temperature,
+        start_field,
+        stop_field,
+        step_field,
+        mevents,
+        inst,
+    ):
         """
         Run scans for both the temperature and field.
 
@@ -242,7 +295,9 @@ The 'Total Estimated Run Time' (etc.) is actually the total number of events in 
           mevents (float): The amount of millions of events to wait for in each run.
           inst (module): The instrument scripts module to set the temperature and field with.
         """
-        for temp in inclusive_float_range_with_step_flip(start_temperature, stop_temperature, step_temperature):
+        for temp in inclusive_float_range_with_step_flip(
+            start_temperature, stop_temperature, step_temperature
+        ):
             inst.settemp(temp, wait=True)
             self.run_scans(start_field, stop_field, step_field, mevents, inst.setmag)
 
@@ -263,21 +318,42 @@ The 'Total Estimated Run Time' (etc.) is actually the total number of events in 
 
     # Check to see if the provided parameters are valid
     @cast_parameters_to(
-         start_temperature=float_or_keep, stop_temperature=float_or_keep, step_temperature=float,
-         start_field=float_or_keep, stop_field=float_or_keep, step_field=float, 
-         custom=cast_custom_expression, mevents=float, magnet_device=magnet_device_type)
-    def parameters_valid(self,
-                         start_temperature=1.0, stop_temperature=1.0, step_temperature=1.0,
-                         start_field=1.0, stop_field=1.0, step_field=1.0,
-                         custom="None",  mevents=10, magnet_device="N/A"):
+        start_temperature=float_or_keep,
+        stop_temperature=float_or_keep,
+        step_temperature=float,
+        start_field=float_or_keep,
+        stop_field=float_or_keep,
+        step_field=float,
+        custom=cast_custom_expression,
+        mevents=float,
+        magnet_device=magnet_device_type,
+    )
+    def parameters_valid(
+        self,
+        start_temperature=1.0,
+        stop_temperature=1.0,
+        step_temperature=1.0,
+        start_field=1.0,
+        stop_field=1.0,
+        step_field=1.0,
+        custom="None",
+        mevents=10,
+        magnet_device="N/A",
+    ):
         # The reason as to why the parameters are not valid
         reason = ""
-        reason += self.check_start_and_stop_valid(start_temperature, stop_temperature, "temperature")
+        reason += self.check_start_and_stop_valid(
+            start_temperature, stop_temperature, "temperature"
+        )
         reason += self.check_start_and_stop_valid(start_field, stop_field, "field")
-        reason += self.check_step_set_correctly(start_temperature, stop_temperature, step_temperature, "temperature")
+        reason += self.check_step_set_correctly(
+            start_temperature, stop_temperature, step_temperature, "temperature"
+        )
         reason += self.check_step_set_correctly(start_field, stop_field, step_field, "field")
         reason += self.check_magnet_selected_correctly(start_field, stop_field, magnet_device)
-        reason += self.check_if_start_or_stop_field_are_keep_then_magnet_is_na(start_field, stop_field, magnet_device)
+        reason += self.check_if_start_or_stop_field_are_keep_then_magnet_is_na(
+            start_field, stop_field, magnet_device
+        )
         # If there is no reason return None i.e. the parameters are valid
         if reason != "":
             return reason
@@ -297,27 +373,31 @@ The 'Total Estimated Run Time' (etc.) is actually the total number of events in 
           str: An empty string if start and stop are valid, or a string containing a reason why they are not.
         """
         if (start is None and stop is not None) or (stop is None and start is not None):
-            return "If start {0} or stop {0} is keep, the other must also be keep\n".format(variable_name)
+            return "If start {0} or stop {0} is keep, the other must also be keep\n".format(
+                variable_name
+            )
         else:
             return ""
-    
-    def check_if_start_or_stop_field_are_keep_then_magnet_is_na(self, start_field, stop_field, magnet):
-      """
-      Check that if the start or stop fields are keep then the magnet is set to N/A
 
-      Parameters:
-          start_field (float): The start value of a scan.
-          stop_field (float): The end value of a scan.
-          magnet (str): The magnet device selected.
+    def check_if_start_or_stop_field_are_keep_then_magnet_is_na(
+        self, start_field, stop_field, magnet
+    ):
+        """
+        Check that if the start or stop fields are keep then the magnet is set to N/A
 
-        Returns:
-          str: A string to raise awareness of invalidity if start or stop are "keep" and the magnet is not N/A, 
-           or an empty string to show they are valid. 
-      """
-      if (start_field is None or stop_field is None) and magnet != magnet_not_applicable:
-        return "If start_field or stop_field is keep, then the selected magnet must be N/A".format()
-      else:
-        return ""
+        Parameters:
+            start_field (float): The start value of a scan.
+            stop_field (float): The end value of a scan.
+            magnet (str): The magnet device selected.
+
+          Returns:
+            str: A string to raise awareness of invalidity if start or stop are "keep" and the magnet is not N/A,
+             or an empty string to show they are valid.
+        """
+        if (start_field is None or stop_field is None) and magnet != magnet_not_applicable:
+            return "If start_field or stop_field is keep, then the selected magnet must be N/A".format()
+        else:
+            return ""
 
     def check_step_set_correctly(self, start, stop, step, variable_name):
         """
@@ -363,12 +443,17 @@ The 'Total Estimated Run Time' (etc.) is actually the total number of events in 
             # If we are setting a field we need to set the magnet device to use
             if magnet_device not in magnet_devices.values():
                 reason += "Field set but magnet devices {} not in possible devices {}\n".format(
-                    magnet_device, list(magnet_devices.keys()))
+                    magnet_device, list(magnet_devices.keys())
+                )
             # Only the zero field can set a field of zero
-            if (np.isclose(start_field, 0.0) or np.isclose(stop_field, 0.0)) and magnet_device != self.active_zf:
+            if (
+                np.isclose(start_field, 0.0) or np.isclose(stop_field, 0.0)
+            ) and magnet_device != self.active_zf:
                 reason += "Trying to set a zero field without using the active zero field ({}, {})\n".format(
-                    magnet_device, self.active_zf)
-            if (not np.isclose(start_field, 0.0) or not np.isclose(stop_field,
-                                                                   0.0)) and magnet_device == self.active_zf:
+                    magnet_device, self.active_zf
+                )
+            if (
+                not np.isclose(start_field, 0.0) or not np.isclose(stop_field, 0.0)
+            ) and magnet_device == self.active_zf:
                 reason += "Cannot set a non-zero field with the active zero field\n"
         return reason

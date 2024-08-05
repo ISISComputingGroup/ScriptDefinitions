@@ -51,7 +51,6 @@ def magnet_device_type(magnet_device):
 
 
 class DoRun(ScriptDefinition):
-
     def get_help(self):
         return """
 Magnet device must be one of {} or if the field is KEEP then it can be N/A.\n
@@ -61,9 +60,15 @@ If the field is zero magnet device must be ZF.\n
     def estimate_time(self, temperature=1.0, field=1.0, mevents=10, magnet_device="N/A"):
         return 0
 
-    @cast_parameters_to(temperature=float_or_keep, field=float_or_keep, mevents=int, magnet_device=magnet_device_type)
+    @cast_parameters_to(
+        temperature=float_or_keep,
+        field=float_or_keep,
+        mevents=int,
+        magnet_device=magnet_device_type,
+    )
     def run(self, temperature=1.0, field=1.0, mevents=10, magnet_device="N/A"):
         import inst
+
         # Don't set temp if the user has specified keep
         if temperature is not None:
             inst.settemp(temperature, wait=True)
@@ -71,7 +76,11 @@ If the field is zero magnet device must be ZF.\n
         if field is not None:
             # Select a magnet to set the field with
             if g.cget("a_selected_magnet")["value"] != magnet_device:
-                magnet_to_function_map = {"Active ZF": inst.f0, "Danfysik": inst.lf0, "T20 Coils": inst.tf0}
+                magnet_to_function_map = {
+                    "Active ZF": inst.f0,
+                    "Danfysik": inst.lf0,
+                    "T20 Coils": inst.tf0,
+                }
                 magnet_to_function_map[magnet_device]()
             inst.setmag(field, wait=True)
         # Do the run for this action
@@ -88,13 +97,19 @@ If the field is zero magnet device must be ZF.\n
         g.waitfor_mevents(mevents)
         g.end(quiet=True)
 
-    @cast_parameters_to(temperature=float_or_keep, field=float_or_keep, mevents=int, magnet_device=magnet_device_type)
+    @cast_parameters_to(
+        temperature=float_or_keep,
+        field=float_or_keep,
+        mevents=int,
+        magnet_device=magnet_device_type,
+    )
     def parameters_valid(self, temperature=1.0, field=1.0, mevents=10, magnet_device="N/A"):
         reason = ""
         # We need a suitable device to set the field with
         if field is not None and magnet_device not in magnet_devices.values():
             reason += "Field set but magnet devices {} not in possible devices {}\n".format(
-                magnet_device, list(magnet_devices.keys()))
+                magnet_device, list(magnet_devices.keys())
+            )
         if np.isclose(field, 0) and magnet_device != magnet_devices["ZF"]:
             reason += "When setting a zero field must use ZF\n"
         if not np.isclose(field, 0) and magnet_device == magnet_devices["ZF"]:
