@@ -1,6 +1,6 @@
-from genie_python.genie_script_generator import ScriptDefinition, cast_parameters_to
-
 from enum import Enum
+
+from genie_python.genie_script_generator import ScriptDefinition, cast_parameters_to
 
 
 class DoRun(ScriptDefinition):

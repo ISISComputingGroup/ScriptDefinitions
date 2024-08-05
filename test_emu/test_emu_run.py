@@ -1,6 +1,7 @@
-from mock import patch, MagicMock
-from emu import DoRun
 import unittest
+
+from emu import DoRun
+from mock import MagicMock, patch
 
 inst = MagicMock()
 

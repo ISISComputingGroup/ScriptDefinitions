@@ -1,7 +1,7 @@
 import unittest
-from mock import MagicMock
 
 from emu import DoRun, magnet_devices
+from mock import MagicMock
 
 
 class TestParameterValidation(unittest.TestCase):

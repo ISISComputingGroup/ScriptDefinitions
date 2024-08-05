@@ -1,11 +1,15 @@
-from emu import magnet_device_type as magnet_device_type_emu, magnet_devices as magnet_devices_emu
-from emu import float_or_keep as float_or_keep_emu
-from emuloop import magnet_device_type as magnet_device_type_emuloop, magnet_devices as magnet_devices_emuloop
-from emuloop import float_or_keep as float_or_keep_emuloop, cast_custom_expression as cast_custom_expression_emuloop
-
 import unittest
+
 import numpy as np
+from emu import float_or_keep as float_or_keep_emu
+from emu import magnet_device_type as magnet_device_type_emu
+from emu import magnet_devices as magnet_devices_emu
 from hamcrest import assert_that, calling, raises
+
+from emuloop import cast_custom_expression as cast_custom_expression_emuloop
+from emuloop import float_or_keep as float_or_keep_emuloop
+from emuloop import magnet_device_type as magnet_device_type_emuloop
+from emuloop import magnet_devices as magnet_devices_emuloop
 
 
 class TestMagnetCaster(unittest.TestCase):

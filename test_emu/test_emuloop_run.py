@@ -1,6 +1,8 @@
-from mock import patch, MagicMock
-from emuloop import DoRun, SetDefinition
 import unittest
+
+from mock import MagicMock, patch
+
+from emuloop import DoRun, SetDefinition
 
 inst = MagicMock()
 

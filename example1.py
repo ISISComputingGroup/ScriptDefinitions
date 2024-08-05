@@ -1,5 +1,7 @@
-from genie_python.genie_script_generator import ScriptDefinition, cast_parameters_to
 from collections import OrderedDict
+
+from genie_python.genie_script_generator import ScriptDefinition, cast_parameters_to
+
 
 class DoRun(ScriptDefinition):
 

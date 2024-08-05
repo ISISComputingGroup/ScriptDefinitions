@@ -1,6 +1,6 @@
-from genie_python.genie_script_generator import ScriptDefinition, cast_parameters_to
-from genie_python import genie as g
 import numpy as np
+from genie_python import genie as g
+from genie_python.genie_script_generator import ScriptDefinition, cast_parameters_to
 
 
 class DoRun(ScriptDefinition):
