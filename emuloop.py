@@ -1,4 +1,5 @@
 from enum import Enum
+from typing import Optional
 
 import numpy as np
 from genie_python import genie as g
@@ -99,11 +100,16 @@ def inclusive_float_range_with_step_flip(start, stop, step):
       >>> inclusive_float_range_with_step_flip(0.5, 2, 0.5) == [0.5, 1, 1.5, 2]
       >>> inclusive_float_range_with_step_flip(2, 0.5, 0.5) == [2, 1.5, 1, 0.5]
     """
-    if start > stop and step > 0:
-        step = -step
-    stop = stop + step
-    for i in np.arange(start, stop, step):
-        yield i
+    modulo = abs(stop - start) % abs(step)
+    if stop > start:
+        vstop = stop - modulo
+    else:
+        vstop = stop + modulo
+    for i in np.linspace(start, vstop, int(abs(vstop - start) / abs(step)) + 1):
+        if ((i >= start) and (i <= stop)) or (
+            (i >= stop) and (i <= start)
+        ):  # Check inserted here to ensure scan remains within defined range
+            yield i
 
 
 class DoRun(ScriptDefinition):
@@ -204,7 +210,7 @@ If the field is zero magnet device must be ZF.\n
             g.waitfor_mevents(mevents)
             g.end(quiet=True)
 
-    def set_magnet_device(self, magnet_device, inst):
+    def set_magnet_device(self, magnet_device: str, inst)-> None:
         """
         Use the instrument scripts to set the magnet device, given a string.
 
@@ -216,7 +222,7 @@ If the field is zero magnet device must be ZF.\n
         if g.cget("a_selected_magnet")["value"] != magnet_device:
             magnet_to_function_map[magnet_device]()
 
-    def check_set_definition(self, start_temp_or_field, stop_temp_or_field):
+    def check_set_definition(self, start_temp_or_field: float, stop_temp_or_field: float):
         """
         Check if we are running a scan, doing one set (a point) or not setting at all.
 
@@ -239,15 +245,15 @@ If the field is zero magnet device must be ZF.\n
 
     def run_temp_and_field_scans(
         self,
-        start_temperature,
-        stop_temperature,
-        step_temperature,
-        start_field,
-        stop_field,
-        step_field,
-        mevents,
+        start_temperature: float,
+        stop_temperature: float,
+        step_temperature: float,
+        start_field: float,
+        stop_field: float,
+        step_field: float,
+        mevents: float,
         inst,
-    ):
+    ) -> None:
         """
         Run scans for both the temperature and field.
 
@@ -267,7 +273,7 @@ If the field is zero magnet device must be ZF.\n
             inst.settemp(temp, wait=True)
             self.run_scans(start_field, stop_field, step_field, mevents, inst.setmag)
 
-    def run_scans(self, start, stop, step, mevents, set_parameter_func):
+    def run_scans(self, start: float, stop: float, step: float, mevents: float, set_parameter_func) -> None:
         """
         Run a scan for the given set_parameter_func
 
@@ -296,16 +302,16 @@ If the field is zero magnet device must be ZF.\n
     )
     def parameters_valid(
         self,
-        start_temperature=1.0,
-        stop_temperature=1.0,
-        step_temperature=1.0,
-        start_field=1.0,
-        stop_field=1.0,
-        step_field=1.0,
-        custom="None",
-        mevents=10,
-        magnet_device="N/A",
-    ):
+        start_temperature: float | str = 1.0,
+        stop_temperature: float | str = 1.0,
+        step_temperature: float = 1.0,
+        start_field: float | str = 1.0,
+        stop_field: float | str = 1.0,
+        step_field: float = 1.0,
+        custom: str = "None",
+        mevents: float = 10,
+        magnet_device: str = "N/A",
+    ) -> Optional[str]:
         # The reason as to why the parameters are not valid
         reason = ""
         reason += self.check_start_and_stop_valid(
@@ -326,7 +332,7 @@ If the field is zero magnet device must be ZF.\n
         else:
             return None
 
-    def check_start_and_stop_valid(self, start, stop, variable_name):
+    def check_start_and_stop_valid(self, start: float, stop: float, variable_name: str) -> str:
         """
         Check that start and stop are either both None or both values.
 
@@ -346,8 +352,8 @@ If the field is zero magnet device must be ZF.\n
             return ""
 
     def check_if_start_or_stop_field_are_keep_then_magnet_is_na(
-        self, start_field, stop_field, magnet
-    ):
+        self, start_field: float, stop_field: float, magnet: str
+    ) -> str:
         """
         Check that if the start or stop fields are keep then the magnet is set to N/A
 
@@ -361,11 +367,11 @@ If the field is zero magnet device must be ZF.\n
              or an empty string to show they are valid.
         """
         if (start_field is None or stop_field is None) and magnet != magnet_not_applicable:
-            return "If start_field or stop_field is keep, then the selected magnet must be N/A".format()
+            return "If start_field or stop_field is keep, then the selected magnet must be N/A"
         else:
             return ""
 
-    def check_step_set_correctly(self, start, stop, step, variable_name):
+    def check_step_set_correctly(self, start: float, stop: float, step: float, variable_name: str) -> str:
         """
         If we are scanning check that the step is positive and not zero.
 
@@ -388,11 +394,13 @@ If the field is zero magnet device must be ZF.\n
                 reason += "Step {} must be positive\n".format(variable_name)
         return reason
 
-    def check_magnet_selected_correctly(self, start_field, stop_field, magnet_device):
+    def check_magnet_selected_correctly(
+        self, start_field: float, stop_field: float, magnet_device: str
+    ) -> str:
         """
         If we are setting a field check:
-         - The magnet device that has been selected is a valid one i.e. one of our listed magnet devices
-         - If the field is zero we are using the active zero field device
+         - The magnet device that has been selected is a valid one i.e. one of our listed magnet
+            devices If the field is zero we are using the active zero field device
          - If the field is not zero we are not using the the active zero field device
 
         Parameters:
@@ -408,15 +416,17 @@ If the field is zero magnet device must be ZF.\n
         if field_set_definition != SetDefinition.UNDEFINED:
             # If we are setting a field we need to set the magnet device to use
             if magnet_device not in magnet_devices.values():
-                reason += "Field set but magnet devices {} not in possible devices {}\n".format(
-                    magnet_device, list(magnet_devices.keys())
+                reason += (
+                    f"Field set but magnet devices {magnet_device} "
+                    f"not in possible devices {list(magnet_devices.keys())}\n"
                 )
             # Only the zero field can set a field of zero
             if (
                 np.isclose(start_field, 0.0) or np.isclose(stop_field, 0.0)
             ) and magnet_device != self.active_zf:
-                reason += "Trying to set a zero field without using the active zero field ({}, {})\n".format(
-                    magnet_device, self.active_zf
+                reason += (
+                    f"Trying to set a zero field without using the active zero field "
+                    f"({magnet_device}, {self.active_zf})\n"
                 )
             if (
                 not np.isclose(start_field, 0.0) or not np.isclose(stop_field, 0.0)

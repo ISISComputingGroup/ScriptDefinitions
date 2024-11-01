@@ -15,9 +15,15 @@ class TestEmuRun(unittest.TestCase):
     @patch.dict("sys.modules", inst=inst)
     def test_GIVEN_no_temp_or_field_WHEN_run_THEN_nothing_set_AND_run_happens(self):
         self.script_definition.run(
-            start_temperature="keep", stop_temperature="keep", step_temperature="1.0",
-            start_field="keep", stop_field="keep", step_field="1", custom="None", mevents="10",
-            magnet_device="TF"
+            start_temperature="keep",
+            stop_temperature="keep",
+            step_temperature="1.0",
+            start_field="keep",
+            stop_field="keep",
+            step_field="1",
+            custom="None",
+            mevents="10",
+            magnet_device="TF",
         )
         inst.settemp.assert_not_called()
         inst.setmag.assert_not_called()
@@ -29,9 +35,15 @@ class TestEmuRun(unittest.TestCase):
         self, cget_mock
     ):
         self.script_definition.run(
-            start_temperature="1.0", stop_temperature="1.0", step_temperature="1.0",
-            start_field="keep", stop_field="keep", step_field="1", custom="None", mevents="10",
-            magnet_device="N/A"
+            start_temperature="1.0",
+            stop_temperature="1.0",
+            step_temperature="1.0",
+            start_field="keep",
+            stop_field="keep",
+            step_field="1",
+            custom="None",
+            mevents="10",
+            magnet_device="N/A",
         )
         inst.settemp.assert_called_once()
         inst.setmag.assert_not_called()
@@ -44,8 +56,15 @@ class TestEmuRun(unittest.TestCase):
         self, cget_mock
     ):
         self.script_definition.run(
-            start_temperature="keep", stop_temperature="keep", step_temperature="1.0",
-            start_field="200.0", stop_field="200.0", step_field="1", custom="None", mevents="10", magnet_device="LF"
+            start_temperature="keep",
+            stop_temperature="keep",
+            step_temperature="1.0",
+            start_field="200.0",
+            stop_field="200.0",
+            step_field="1",
+            custom="None",
+            mevents="10",
+            magnet_device="LF",
         )
         cget_mock.assert_called_once()
         inst.settemp.assert_not_called()
@@ -59,9 +78,15 @@ class TestEmuRun(unittest.TestCase):
         self, cget_mock
     ):
         self.script_definition.run(
-            start_temperature="1.0", stop_temperature="1.0", step_temperature="1.0",
-            start_field="17.0", stop_field="17.0", step_field="1", custom="None", mevents="10",
-            magnet_device="TF"
+            start_temperature="1.0",
+            stop_temperature="1.0",
+            step_temperature="1.0",
+            start_field="17.0",
+            stop_field="17.0",
+            step_field="1",
+            custom="None",
+            mevents="10",
+            magnet_device="TF",
         )
         cget_mock.assert_called_once()
         inst.settemp.assert_called_once()

@@ -1,6 +1,6 @@
 import unittest
 
-from emuloop import inclusive_float_range_with_step_flip
+from emulooptime import inclusive_float_range_with_step_flip
 
 
 class TestRange(unittest.TestCase):

@@ -2,6 +2,34 @@ import numpy as np
 from genie_python import genie as g
 from genie_python.genie_script_generator import ScriptDefinition, cast_parameters_to
 
+def inclusive_float_range_with_step_flip(start, stop, step):
+    """
+    If we are counting downwards from start to stop automatically flips step to be negative.
+    Inclusive of stop. Only tested for float values.
+
+    Parameters:
+      start (float): the value to start the range from
+      stop (float): the value to stop the range at
+      step (float): the steps to take from start to stop
+
+    Returns:
+      The range from start to stop including all steps in between.
+
+    Examples:
+      >>> inclusive_float_range_with_step_flip(0.5, 2, 0.5) == [0.5, 1, 1.5, 2]
+      >>> inclusive_float_range_with_step_flip(2, 0.5, 0.5) == [2, 1.5, 1, 0.5]
+    """
+    # Get the modulo so we know to stop early like arrange if the steps don't fit evenly.
+    modulo = abs(stop - start) % abs(step)
+    if stop > start:
+        vstop = stop - modulo
+    else:
+        vstop = stop + modulo
+    for i in np.linspace(start, vstop, int(abs(vstop - start) / abs(step))+1):
+        if ((i >= start) and (i <= stop)) or (
+            (i >= stop) and (i <= start)
+        ):  # Check inserted here to ensure scan remains within defined range
+            yield i
 
 class DoRun(ScriptDefinition):
     @cast_parameters_to(start_temp=float, stop_temp=float, step_temp=float)
@@ -16,7 +44,7 @@ class DoRun(ScriptDefinition):
         else:
             stop_temp -= small_amount
         # Regular range can't use floats
-        for temp in np.arange(start_temp, stop_temp, step_temp):
+        for temp in inclusive_float_range_with_step_flip(start_temp, stop_temp, step_temp):
             g.cset("temperature", temp)
             g.begin(quiet=True)
             g.waitfor_time(seconds=30)
@@ -43,3 +71,5 @@ class DoRun(ScriptDefinition):
 
     def get_help(self):
         return "An example config to show a looping mechanism"
+
+

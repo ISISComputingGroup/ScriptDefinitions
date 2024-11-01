@@ -99,11 +99,12 @@ def inclusive_float_range_with_step_flip(start, stop, step):
       >>> inclusive_float_range_with_step_flip(0.5, 2, 0.5) == [0.5, 1, 1.5, 2]
       >>> inclusive_float_range_with_step_flip(2, 0.5, 0.5) == [2, 1.5, 1, 0.5]
     """
-    if start > stop and step > 0:
-        step = -step
-    #    stop = stop + step **** This original code can cause the scan to extend beyond the given range
-    vstop = stop + step
-    for i in np.arange(start, vstop, step):
+    modulo = abs(stop - start) % abs(step)
+    if stop > start:
+        vstop = stop - modulo
+    else:
+        vstop = stop + modulo
+    for i in np.linspace(start, vstop, int(abs(vstop - start) / abs(step))+1):
         if ((i >= start) and (i <= stop)) or (
             (i >= stop) and (i <= start)
         ):  # Check inserted here to ensure scan remains within defined range
