@@ -1,9 +1,9 @@
 import unittest
 
 import numpy as np
-from emu import float_or_keep as float_or_keep_emu
-from emu import magnet_device_type as magnet_device_type_emu
-from emu import magnet_devices as magnet_devices_emu
+from emulooptime import float_or_keep as float_or_keep_emu
+from emulooptime import magnet_device_type as magnet_device_type_emu
+from emulooptime import magnet_devices as magnet_devices_emu
 from hamcrest import assert_that, calling, raises
 
 from emuloop import cast_custom_expression as cast_custom_expression_emuloop
