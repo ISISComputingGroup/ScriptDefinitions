@@ -141,11 +141,11 @@ class DoRun(ScriptDefinition):
     )
     def estimate_time(
         self,
-        start_temperature: Optional[float] = None,
-        stop_temperature: Optional[float] = None,
+        start_temperature: Optional[float] = "keep", # type: ignore[reportArgumentType]
+        stop_temperature: Optional[float] = "keep", # type: ignore[reportArgumentType]
         step_temperature: float = 0,
-        start_field: Optional[float] = None,
-        stop_field: Optional[float] = None,
+        start_field: Optional[float] = "keep", # type: ignore[reportArgumentType]
+        stop_field: Optional[float] = "keep", # type: ignore[reportArgumentType]
         step_field: float = 0,
         custom: str = "None",
         mevents: float = 10,
@@ -189,11 +189,11 @@ class DoRun(ScriptDefinition):
     )
     def run(
         self,
-        start_temperature: Optional[float] = None,
-        stop_temperature: Optional[float] = None,
+        start_temperature: Optional[float] = "keep", # type: ignore[reportArgumentType]
+        stop_temperature: Optional[float] = "keep", # type: ignore[reportArgumentType]
         step_temperature: float = 0,
-        start_field: Optional[float] = None,
-        stop_field: Optional[float] = None,
+        start_field: Optional[float] = "keep", # type: ignore[reportArgumentType]
+        stop_field: Optional[float] = "keep", # type: ignore[reportArgumentType]
         step_field: float = 0,
         custom: str = "None",
         mevents: float = 10,

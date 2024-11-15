@@ -124,17 +124,28 @@ class DoRun(ScriptDefinition):
         return (f"Magnet device must be one of {list(magnet_devices.keys())} or if the field is "
                 f"KEEP then it can be N/A.\nIf the field is zero magnet device must be ZF.\n")
 
+    @cast_parameters_to(
+        start_temperature=float_or_keep,
+        stop_temperature=float_or_keep,
+        step_temperature=float,
+        start_field=float_or_keep,
+        stop_field=float_or_keep,
+        step_field=float,
+        custom=cast_custom_expression,
+        mevents=float,
+        magnet_device=magnet_device_type,
+    )
     def estimate_time(
         self,
-        start_temperature: float|str=1.0,
-        stop_temperature: float|str=1.0,
-        step_temperature: float =10,
-        start_field: float|str =1.0,
-        stop_field: float|str =1.0,
-        step_field: float =1.0,
-        custom: str="None",
-        mevents:float=10,
-        magnet_device: str="N/A",
+        start_temperature: Optional[float] = 1.0,
+        stop_temperature: Optional[float] = 1.0,
+        step_temperature: float = 10,
+        start_field: Optional[float] = 1.0,
+        stop_field: Optional[float] = 1.0,
+        step_field: float = 1.0,
+        custom: str = "None",
+        mevents:float = 10,
+        magnet_device: str = "N/A",
     )-> int:
         return 0
 
@@ -152,11 +163,11 @@ class DoRun(ScriptDefinition):
     )
     def run(
         self,
-        start_temperature: float|str="keep",
-        stop_temperature: float|str="keep",
+        start_temperature: Optional[float]= "keep", # type: ignore[reportArgumentType],
+        stop_temperature: Optional[float]= "keep", # type: ignore[reportArgumentType],
         step_temperature: float =0,
-        start_field:float|str="keep",
-        stop_field:float|str="keep",
+        start_field: Optional[float]= "keep", # type: ignore[reportArgumentType],
+        stop_field: Optional[float]= "keep", # type: ignore[reportArgumentType],
         step_field:float=0,
         custom:str="None",
         mevents:float=10,
@@ -167,7 +178,7 @@ class DoRun(ScriptDefinition):
         temp_set_definition = self.check_set_definition(start_temperature, stop_temperature)
         field_set_definition = self.check_set_definition(start_field, stop_field)
         # Use the instrument scripts to set the magnet device correctly
-        import inst
+        import inst # type:ignore
 
         if field_set_definition != SetDefinition.UNDEFINED:
             self.set_magnet_device(magnet_device, inst)
@@ -180,6 +191,10 @@ class DoRun(ScriptDefinition):
             inst.setmag(start_field, wait=True)
         # If we are running scans do them
         if temp_set_definition == SetDefinition.SCAN and field_set_definition == SetDefinition.SCAN:
+            assert start_temperature is not None
+            assert stop_temperature is not None
+            assert start_field is not None
+            assert stop_field is not None
             # When we are running scans for both temperature and field do all combinations
             self.run_temp_and_field_scans(
                 start_temperature,
@@ -192,10 +207,14 @@ class DoRun(ScriptDefinition):
                 inst,
             )
         elif temp_set_definition == SetDefinition.SCAN:  # Run scans for the temperature
+            assert start_temperature is not None
+            assert stop_temperature is not None
             self.run_scans(
                 start_temperature, stop_temperature, step_temperature, mevents, inst.settemp
             )
         elif field_set_definition == SetDefinition.SCAN:  # Run scans for the field
+            assert start_field is not None
+            assert stop_field is not None
             self.run_scans(start_field, stop_field, step_field, mevents, inst.setmag)
         else:
             # If we are not doing any scans do a run with temp and field as they are
