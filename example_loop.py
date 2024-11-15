@@ -5,7 +5,7 @@ from genie_python import genie as g
 from genie_python.genie_script_generator import ScriptDefinition, cast_parameters_to
 
 
-def inclusive_float_range_with_step_flip(start: float, stop: float, step: float)-> Generator:
+def inclusive_float_range_with_step_flip(start: float, stop: float, step: float) -> Generator:
     """
     If we are counting downwards from start to stop automatically flips step to be negative.
     Inclusive of stop. Only tested for float values.

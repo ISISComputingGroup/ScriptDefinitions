@@ -20,7 +20,7 @@ class SetDefinition(Enum):
     SCAN = 3
 
 
-def float_or_keep(temp_or_field: str)-> Optional[float]:
+def float_or_keep(temp_or_field: str) -> Optional[float]:
     """
     Convert the input to a float or None if the input is keep (to allow not changing of a
     temperature or field).
@@ -45,7 +45,7 @@ magnet_devices = {"ZF": "Active ZF", "LF": "Danfysik", "TF": "T20 Coils"}
 magnet_not_applicable = "N/A"
 
 
-def magnet_device_type(magnet_device: str)-> str:
+def magnet_device_type(magnet_device: str) -> str:
     """
     Take the shortened magnet selection input e.g. ZF, LF or TF and cast it to the
      required string i.e. Active ZF, Danfysik, T20 Coils.
@@ -69,7 +69,7 @@ def magnet_device_type(magnet_device: str)-> str:
     raise ValueError("Magnet device must be one of {} or N/A".format(list(magnet_devices.keys())))
 
 
-def cast_custom_expression(expression:str)-> str:
+def cast_custom_expression(expression: str) -> str:
     """
     Ensure a custom python expression is not empty (this will cause an error) by filling it with
     None (does nothing).
@@ -87,7 +87,7 @@ def cast_custom_expression(expression:str)-> str:
         return expression
 
 
-def inclusive_float_range_with_step_flip(start: float, stop:float, step:float) -> Generator:
+def inclusive_float_range_with_step_flip(start: float, stop: float, step: float) -> Generator:
     """
     If we are counting downwards from start to stop automatically flips step to be negative.
     Inclusive of stop. Only tested for float values.
@@ -120,9 +120,11 @@ class DoRun(ScriptDefinition):
     active_zf = "Active ZF"
     possible_magnet_devices = [active_zf, "Danfysik", "T20 Coils"]
 
-    def get_help(self)-> str:
-        return (f"Magnet device must be one of {list(magnet_devices.keys())} or if the field is "
-                f"KEEP then it can be N/A.\nIf the field is zero magnet device must be ZF.\n")
+    def get_help(self) -> str:
+        return (
+            f"Magnet device must be one of {list(magnet_devices.keys())} or if the field is "
+            f"KEEP then it can be N/A.\nIf the field is zero magnet device must be ZF.\n"
+        )
 
     @cast_parameters_to(
         start_temperature=float_or_keep,
@@ -144,9 +146,9 @@ class DoRun(ScriptDefinition):
         stop_field: Optional[float] = 1.0,
         step_field: float = 1.0,
         custom: str = "None",
-        mevents:float = 10,
+        mevents: float = 10,
         magnet_device: str = "N/A",
-    )-> int:
+    ) -> int:
         return 0
 
     # Loop through a set of temperatures or fields using a start, stop and step mechanism
@@ -163,22 +165,22 @@ class DoRun(ScriptDefinition):
     )
     def run(
         self,
-        start_temperature: Optional[float]= "keep", # type: ignore[reportArgumentType],
-        stop_temperature: Optional[float]= "keep", # type: ignore[reportArgumentType],
-        step_temperature: float =0,
-        start_field: Optional[float]= "keep", # type: ignore[reportArgumentType],
-        stop_field: Optional[float]= "keep", # type: ignore[reportArgumentType],
-        step_field:float=0,
-        custom:str="None",
-        mevents:float=10,
-        magnet_device:str="N/A",
-    )-> None:
+        start_temperature: Optional[float] = "keep",  # type: ignore[reportArgumentType],
+        stop_temperature: Optional[float] = "keep",  # type: ignore[reportArgumentType],
+        step_temperature: float = 0,
+        start_field: Optional[float] = "keep",  # type: ignore[reportArgumentType],
+        stop_field: Optional[float] = "keep",  # type: ignore[reportArgumentType],
+        step_field: float = 0,
+        custom: str = "None",
+        mevents: float = 10,
+        magnet_device: str = "N/A",
+    ) -> None:
         # Scan if start and stop are different, set once if they are equal or do not set if they are
         # None
         temp_set_definition = self.check_set_definition(start_temperature, stop_temperature)
         field_set_definition = self.check_set_definition(start_field, stop_field)
         # Use the instrument scripts to set the magnet device correctly
-        import inst # type:ignore
+        import inst  # type:ignore
 
         if field_set_definition != SetDefinition.UNDEFINED:
             self.set_magnet_device(magnet_device, inst)
@@ -210,7 +212,11 @@ class DoRun(ScriptDefinition):
             assert start_temperature is not None
             assert stop_temperature is not None
             self.run_scans(
-                start_temperature, stop_temperature, step_temperature, mevents, inst.settemp
+                start_temperature,
+                stop_temperature,
+                step_temperature,
+                mevents,
+                inst.settemp,
             )
         elif field_set_definition == SetDefinition.SCAN:  # Run scans for the field
             assert start_field is not None
@@ -240,11 +246,17 @@ class DoRun(ScriptDefinition):
           magnet_device (str): The string representation of the magnet device to select.
           inst (module): The instrument scripts module to set the magnet device with.
         """
-        magnet_to_function_map = {"Active ZF": inst.f0, "Danfysik": inst.lf0, "T20 Coils": inst.tf0}
+        magnet_to_function_map = {
+            "Active ZF": inst.f0,
+            "Danfysik": inst.lf0,
+            "T20 Coils": inst.tf0,
+        }
         if g.cget("a_selected_magnet")["value"] != magnet_device:
             magnet_to_function_map[magnet_device]()
 
-    def check_set_definition(self, start_temp_or_field: Optional[float], stop_temp_or_field: Optional[float]) -> Enum:
+    def check_set_definition(
+        self, start_temp_or_field: Optional[float], stop_temp_or_field: Optional[float]
+    ) -> Enum:
         """
         Check if we are running a scan, doing one set (a point) or not setting at all.
 
@@ -297,7 +309,12 @@ class DoRun(ScriptDefinition):
             self.run_scans(start_field, stop_field, step_field, mevents, inst.setmag)
 
     def run_scans(
-        self, start: float, stop: float, step: float, mevents: float, set_parameter_func: Callable
+        self,
+        start: float,
+        stop: float,
+        step: float,
+        mevents: float,
+        set_parameter_func: Callable,
     ) -> None:
         """
         Run a scan for the given set_parameter_func
@@ -358,7 +375,9 @@ class DoRun(ScriptDefinition):
         else:
             return None
 
-    def check_start_and_stop_valid(self, start: Optional[float], stop: Optional[float], variable_name: str) -> str:
+    def check_start_and_stop_valid(
+        self, start: Optional[float], stop: Optional[float], variable_name: str
+    ) -> str:
         """
         Check that start and stop are either both None or both values.
 
@@ -399,7 +418,11 @@ class DoRun(ScriptDefinition):
             return ""
 
     def check_step_set_correctly(
-        self, start: Optional[float], stop: Optional[float], step: float, variable_name: str
+        self,
+        start: Optional[float],
+        stop: Optional[float],
+        step: float,
+        variable_name: str,
     ) -> str:
         """
         If we are scanning check that the step is positive and not zero.
@@ -426,7 +449,10 @@ class DoRun(ScriptDefinition):
         return reason
 
     def check_magnet_selected_correctly(
-        self, start_field: Optional[float], stop_field: Optional[float], magnet_device: str
+        self,
+        start_field: Optional[float],
+        stop_field: Optional[float],
+        magnet_device: str,
     ) -> str:
         """
         If we are setting a field check:

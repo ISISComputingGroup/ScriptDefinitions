@@ -35,9 +35,7 @@ class TestRun(unittest.TestCase):
         inst.lf0.assert_called_once()
         self.assertEqual(inst.settemp.call_count, 10)
         self.assertEqual(inst.setmag.call_count, 10 * 10)
-        self.assertEqual(
-            self.check_mevents_mock.call_count, 10 * 10
-        )
+        self.assertEqual(self.check_mevents_mock.call_count, 10 * 10)
 
     @patch.dict("sys.modules", inst=inst)
     @patch("six.moves.builtins.eval")
@@ -60,9 +58,7 @@ class TestRun(unittest.TestCase):
         inst.lf0.assert_called_once()
         self.assertEqual(inst.settemp.call_count, 10)
         inst.setmag.assert_called_once()
-        self.assertEqual(
-            self.check_mevents_mock.call_count, 10
-        )
+        self.assertEqual(self.check_mevents_mock.call_count, 10)
 
     @patch.dict("sys.modules", inst=inst)
     @patch("six.moves.builtins.eval")
@@ -85,9 +81,7 @@ class TestRun(unittest.TestCase):
         inst.tf0.assert_called_once()
         inst.settemp.assert_called_once()
         self.assertEqual(inst.setmag.call_count, 10)
-        self.assertEqual(
-            self.check_mevents_mock.call_count, 10
-        )
+        self.assertEqual(self.check_mevents_mock.call_count, 10)
 
     @patch.dict("sys.modules", inst=inst)
     @patch("six.moves.builtins.eval")
@@ -133,9 +127,7 @@ class TestRun(unittest.TestCase):
         inst.tf0.assert_not_called()
         self.assertEqual(inst.settemp.call_count, 10)
         inst.setmag.assert_not_called()
-        self.assertEqual(
-            self.check_mevents_mock.call_count, 10
-        )
+        self.assertEqual(self.check_mevents_mock.call_count, 10)
 
     @patch.dict("sys.modules", inst=inst)
     @patch("six.moves.builtins.eval")
@@ -181,9 +173,7 @@ class TestRun(unittest.TestCase):
         inst.tf0.assert_called_once()
         self.assertEqual(inst.setmag.call_count, 10)
         inst.settemp.assert_not_called()
-        self.assertEqual(
-            self.check_mevents_mock.call_count, 10
-        )
+        self.assertEqual(self.check_mevents_mock.call_count, 10)
 
     @patch.dict("sys.modules", inst=inst)
     @patch("six.moves.builtins.eval")

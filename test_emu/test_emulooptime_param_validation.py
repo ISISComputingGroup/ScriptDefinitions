@@ -1,7 +1,8 @@
 import unittest
 
-from emulooptime import DoRun, magnet_devices
 from mock import MagicMock
+
+from emulooptime import DoRun, magnet_devices
 
 
 class TestParameterValidation(unittest.TestCase):

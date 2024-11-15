@@ -1,7 +1,8 @@
 import unittest
 
-from emulooptime import DoRun
 from mock import MagicMock, patch
+
+from emulooptime import DoRun
 
 inst = MagicMock()
 

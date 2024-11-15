@@ -1,7 +1,8 @@
 import unittest
 
-from emuloop import DoRun, magnet_devices
 from parameterized import parameterized
+
+from emuloop import DoRun, magnet_devices
 
 start_stop_must_both_be_keep_error_message = (
     "If start {0} or stop {0} is keep, the other must also be keep\n"
