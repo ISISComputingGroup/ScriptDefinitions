@@ -1,8 +1,11 @@
+from typing import Generator, Optional
+
 import numpy as np
 from genie_python import genie as g
 from genie_python.genie_script_generator import ScriptDefinition, cast_parameters_to
 
-def inclusive_float_range_with_step_flip(start, stop, step):
+
+def inclusive_float_range_with_step_flip(start: float, stop: float, step: float)-> Generator:
     """
     If we are counting downwards from start to stop automatically flips step to be negative.
     Inclusive of stop. Only tested for float values.
@@ -25,15 +28,16 @@ def inclusive_float_range_with_step_flip(start, stop, step):
         vstop = stop - modulo
     else:
         vstop = stop + modulo
-    for i in np.linspace(start, vstop, int(abs(vstop - start) / abs(step))+1):
+    for i in np.linspace(start, vstop, int(abs(vstop - start) / abs(step)) + 1):
         if ((i >= start) and (i <= stop)) or (
             (i >= stop) and (i <= start)
         ):  # Check inserted here to ensure scan remains within defined range
             yield i
 
+
 class DoRun(ScriptDefinition):
     @cast_parameters_to(start_temp=float, stop_temp=float, step_temp=float)
-    def run(self, start_temp=1.0, stop_temp=1.0, step_temp=0.5):
+    def run(self, start_temp: float = 1.0, stop_temp: float = 1.0, step_temp: float = 0.5) -> None:
         # Execute the loop once
         if start_temp == stop_temp:
             step_temp = 1.0
@@ -51,7 +55,9 @@ class DoRun(ScriptDefinition):
             g.end(quiet=True)
 
     @cast_parameters_to(start_temp=float, stop_temp=float, step_temp=float)
-    def parameters_valid(self, start_temp=1.0, stop_temp=1.0, step_temp=0.5):
+    def parameters_valid(
+        self, start_temp: float = 1.0, stop_temp: float = 1.0, step_temp: float = 0.5
+    ) -> Optional[str]:
         errors = ""
         if start_temp == 0 or stop_temp == 0:
             errors += "Cannot go to zero kelvin\n"
@@ -59,9 +65,14 @@ class DoRun(ScriptDefinition):
             errors += "Stepping backwards when stop temp is higher than start temp\n"
         elif start_temp > stop_temp and step_temp > 0.0:
             errors += "Stepping forward when stop temp is lower than start temp\n"
+        if errors != "":
+            return errors
+        return None
 
     @cast_parameters_to(start_temp=float, stop_temp=float, step_temp=float)
-    def estimate_time(self, start_temp=1.0, stop_temp=1.0, step_temp=0.5):
+    def estimate_time(
+        self, start_temp: float = 1.0, stop_temp: float = 1.0, step_temp: float = 0.5
+    ) -> int:
         if stop_temp >= start_temp:
             steps = round((stop_temp - start_temp) / step_temp)
             estimated_time = 30 + steps * 30
@@ -69,7 +80,5 @@ class DoRun(ScriptDefinition):
         else:
             return 0
 
-    def get_help(self):
+    def get_help(self) -> str:
         return "An example config to show a looping mechanism"
-
-

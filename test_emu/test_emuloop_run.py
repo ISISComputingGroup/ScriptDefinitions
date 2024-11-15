@@ -10,7 +10,8 @@ inst = MagicMock()
 class TestRun(unittest.TestCase):
     def setUp(self):
         self.script_definition = DoRun()
-        self.script_definition.check_mevents_and_begin_waitfor_mevents_end = MagicMock()
+        self.check_mevents_mock = MagicMock()
+        self.script_definition.check_mevents_and_begin_waitfor_mevents_end = self.check_mevents_mock
         inst.reset_mock()
 
     @patch.dict("sys.modules", inst=inst)
@@ -35,7 +36,7 @@ class TestRun(unittest.TestCase):
         self.assertEqual(inst.settemp.call_count, 10)
         self.assertEqual(inst.setmag.call_count, 10 * 10)
         self.assertEqual(
-            self.script_definition.check_mevents_and_begin_waitfor_mevents_end.call_count, 10 * 10
+            self.check_mevents_mock.call_count, 10 * 10
         )
 
     @patch.dict("sys.modules", inst=inst)
@@ -60,7 +61,7 @@ class TestRun(unittest.TestCase):
         self.assertEqual(inst.settemp.call_count, 10)
         inst.setmag.assert_called_once()
         self.assertEqual(
-            self.script_definition.check_mevents_and_begin_waitfor_mevents_end.call_count, 10
+            self.check_mevents_mock.call_count, 10
         )
 
     @patch.dict("sys.modules", inst=inst)
@@ -85,7 +86,7 @@ class TestRun(unittest.TestCase):
         inst.settemp.assert_called_once()
         self.assertEqual(inst.setmag.call_count, 10)
         self.assertEqual(
-            self.script_definition.check_mevents_and_begin_waitfor_mevents_end.call_count, 10
+            self.check_mevents_mock.call_count, 10
         )
 
     @patch.dict("sys.modules", inst=inst)
@@ -109,7 +110,7 @@ class TestRun(unittest.TestCase):
         inst.tf0.assert_called_once()
         inst.settemp.assert_called_once()
         inst.setmag.assert_called_once()
-        self.script_definition.check_mevents_and_begin_waitfor_mevents_end.assert_called_once()
+        self.check_mevents_mock.assert_called_once()
 
     @patch.dict("sys.modules", inst=inst)
     @patch("six.moves.builtins.eval")
@@ -133,7 +134,7 @@ class TestRun(unittest.TestCase):
         self.assertEqual(inst.settemp.call_count, 10)
         inst.setmag.assert_not_called()
         self.assertEqual(
-            self.script_definition.check_mevents_and_begin_waitfor_mevents_end.call_count, 10
+            self.check_mevents_mock.call_count, 10
         )
 
     @patch.dict("sys.modules", inst=inst)
@@ -157,7 +158,7 @@ class TestRun(unittest.TestCase):
         inst.tf0.assert_not_called()
         inst.settemp.assert_called_once()
         inst.setmag.assert_not_called()
-        self.script_definition.check_mevents_and_begin_waitfor_mevents_end.assert_called_once()
+        self.check_mevents_mock.assert_called_once()
 
     @patch.dict("sys.modules", inst=inst)
     @patch("six.moves.builtins.eval")
@@ -181,7 +182,7 @@ class TestRun(unittest.TestCase):
         self.assertEqual(inst.setmag.call_count, 10)
         inst.settemp.assert_not_called()
         self.assertEqual(
-            self.script_definition.check_mevents_and_begin_waitfor_mevents_end.call_count, 10
+            self.check_mevents_mock.call_count, 10
         )
 
     @patch.dict("sys.modules", inst=inst)
@@ -205,7 +206,7 @@ class TestRun(unittest.TestCase):
         inst.tf0.assert_called_once()
         inst.setmag.assert_called_once()
         inst.settemp.assert_not_called()
-        self.script_definition.check_mevents_and_begin_waitfor_mevents_end.assert_called_once()
+        self.check_mevents_mock.assert_called_once()
 
     @patch.dict("sys.modules", inst=inst)
     @patch("six.moves.builtins.eval")
@@ -228,7 +229,7 @@ class TestRun(unittest.TestCase):
         inst.tf0.assert_not_called()
         inst.setmag.assert_not_called()
         inst.settemp.assert_not_called()
-        self.script_definition.check_mevents_and_begin_waitfor_mevents_end.assert_called_once()
+        self.check_mevents_mock.assert_called_once()
 
 
 class TestEmuRunHelpers(unittest.TestCase):

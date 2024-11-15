@@ -7,7 +7,8 @@ from mock import MagicMock
 class TestParameterValidation(unittest.TestCase):
     def setUp(self):
         self.script_definition = DoRun()
-        self.script_definition.begin_waitfor_mevents_end = MagicMock()
+        self.check_mevents_mock = MagicMock()
+        self.script_definition.check_mevents_and_begin_waitfor_mevents_end = self.check_mevents_mock
 
     def test_GIVEN_we_are_setting_field_BUT_not_selecting_a_valid_magnet_WHEN_validate_THEN_return_reason(
         self,

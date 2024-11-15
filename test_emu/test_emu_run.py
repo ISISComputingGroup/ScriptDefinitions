@@ -9,7 +9,8 @@ inst = MagicMock()
 class TestEmuRun(unittest.TestCase):
     def setUp(self):
         self.script_definition = DoRun()
-        self.script_definition.check_mevents_and_begin_waitfor_mevents_end = MagicMock()
+        self.check_mevents_mock = MagicMock()
+        self.script_definition.check_mevents_and_begin_waitfor_mevents_end = self.check_mevents_mock
         inst.reset_mock()
 
     @patch.dict("sys.modules", inst=inst)
@@ -27,7 +28,7 @@ class TestEmuRun(unittest.TestCase):
         )
         inst.settemp.assert_not_called()
         inst.setmag.assert_not_called()
-        self.script_definition.check_mevents_and_begin_waitfor_mevents_end.assert_called_once()
+        self.check_mevents_mock.assert_called_once()
 
     @patch.dict("sys.modules", inst=inst)
     @patch("genie_python.genie.cget", return_value={"value": "A Magnet"})
@@ -48,7 +49,7 @@ class TestEmuRun(unittest.TestCase):
         inst.settemp.assert_called_once()
         inst.setmag.assert_not_called()
         cget_mock.assert_not_called()
-        self.script_definition.check_mevents_and_begin_waitfor_mevents_end.assert_called_once()
+        self.check_mevents_mock.assert_called_once()
 
     @patch.dict("sys.modules", inst=inst)
     @patch("genie_python.genie.cget", return_value={"value": "A Magnet"})
@@ -70,7 +71,7 @@ class TestEmuRun(unittest.TestCase):
         inst.settemp.assert_not_called()
         inst.setmag.assert_called_once()
         inst.lf0.assert_called_once()
-        self.script_definition.check_mevents_and_begin_waitfor_mevents_end.assert_called_once()
+        self.check_mevents_mock.assert_called_once()
 
     @patch.dict("sys.modules", inst=inst)
     @patch("genie_python.genie.cget", return_value={"value": "A Magnet"})
@@ -92,4 +93,4 @@ class TestEmuRun(unittest.TestCase):
         inst.settemp.assert_called_once()
         inst.setmag.assert_called_once()
         inst.tf0.assert_called_once()
-        self.script_definition.check_mevents_and_begin_waitfor_mevents_end.assert_called_once()
+        self.check_mevents_mock.assert_called_once()
