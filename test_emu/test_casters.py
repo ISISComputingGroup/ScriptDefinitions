@@ -1,15 +1,15 @@
 import unittest
 
-import numpy as np
-from emu import float_or_keep as float_or_keep_emu
-from emu import magnet_device_type as magnet_device_type_emu
-from emu import magnet_devices as magnet_devices_emu
 from hamcrest import assert_that, calling, raises
 
 from emuloop import cast_custom_expression as cast_custom_expression_emuloop
 from emuloop import float_or_keep as float_or_keep_emuloop
 from emuloop import magnet_device_type as magnet_device_type_emuloop
 from emuloop import magnet_devices as magnet_devices_emuloop
+from emulooptime import float_or_keep as float_or_keep_emu
+from emulooptime import magnet_device_type as magnet_device_type_emu
+from emulooptime import magnet_devices as magnet_devices_emu
+from script_utilities import get_steps
 
 
 class TestMagnetCaster(unittest.TestCase):
@@ -82,7 +82,7 @@ class TestFloatOrKeepCall(unittest.TestCase):
         self.assertIsNone(float_or_keep_emuloop(keep.upper()))
 
     def test_GIVEN_string_convertable_to_float_WHEN_cast_THEN_return_casted_value(self):
-        for float_val in np.arange(4.0, 5.0, 0.2):
+        for float_val in get_steps(4.0, 0.2, 5.0):
             self.assertEqual(float_or_keep_emu(str(float_val)), float_val)
             self.assertEqual(float_or_keep_emuloop(str(float_val)), float_val)
 

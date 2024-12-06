@@ -1,7 +1,8 @@
 import unittest
 
-from emu import DoRun
 from mock import MagicMock, patch
+
+from emulooptime import DoRun
 
 inst = MagicMock()
 
@@ -9,17 +10,26 @@ inst = MagicMock()
 class TestEmuRun(unittest.TestCase):
     def setUp(self):
         self.script_definition = DoRun()
-        self.script_definition.begin_waitfor_mevents_end = MagicMock()
+        self.check_mevents_mock = MagicMock()
+        self.script_definition.check_mevents_and_begin_waitfor_mevents_end = self.check_mevents_mock
         inst.reset_mock()
 
     @patch.dict("sys.modules", inst=inst)
     def test_GIVEN_no_temp_or_field_WHEN_run_THEN_nothing_set_AND_run_happens(self):
         self.script_definition.run(
-            temperature="keep", field="keep", mevents="10", magnet_device="N/A"
+            start_temperature="keep",
+            stop_temperature="keep",
+            step_temperature="1.0",
+            start_field="keep",
+            stop_field="keep",
+            step_field="1",
+            custom="None",
+            mevents="10",
+            magnet_device="TF",
         )
         inst.settemp.assert_not_called()
         inst.setmag.assert_not_called()
-        self.script_definition.begin_waitfor_mevents_end.assert_called_once()
+        self.check_mevents_mock.assert_called_once()
 
     @patch.dict("sys.modules", inst=inst)
     @patch("genie_python.genie.cget", return_value={"value": "A Magnet"})
@@ -27,12 +37,20 @@ class TestEmuRun(unittest.TestCase):
         self, cget_mock
     ):
         self.script_definition.run(
-            temperature="1.0", field="keep", mevents="10", magnet_device="N/A"
+            start_temperature="1.0",
+            stop_temperature="1.0",
+            step_temperature="1.0",
+            start_field="keep",
+            stop_field="keep",
+            step_field="1",
+            custom="None",
+            mevents="10",
+            magnet_device="N/A",
         )
         inst.settemp.assert_called_once()
         inst.setmag.assert_not_called()
         cget_mock.assert_not_called()
-        self.script_definition.begin_waitfor_mevents_end.assert_called_once()
+        self.check_mevents_mock.assert_called_once()
 
     @patch.dict("sys.modules", inst=inst)
     @patch("genie_python.genie.cget", return_value={"value": "A Magnet"})
@@ -40,13 +58,21 @@ class TestEmuRun(unittest.TestCase):
         self, cget_mock
     ):
         self.script_definition.run(
-            temperature="keep", field="1.0", mevents="10", magnet_device="LF"
+            start_temperature="keep",
+            stop_temperature="keep",
+            step_temperature="1.0",
+            start_field="200.0",
+            stop_field="200.0",
+            step_field="1",
+            custom="None",
+            mevents="10",
+            magnet_device="LF",
         )
         cget_mock.assert_called_once()
         inst.settemp.assert_not_called()
         inst.setmag.assert_called_once()
         inst.lf0.assert_called_once()
-        self.script_definition.begin_waitfor_mevents_end.assert_called_once()
+        self.check_mevents_mock.assert_called_once()
 
     @patch.dict("sys.modules", inst=inst)
     @patch("genie_python.genie.cget", return_value={"value": "A Magnet"})
@@ -54,10 +80,18 @@ class TestEmuRun(unittest.TestCase):
         self, cget_mock
     ):
         self.script_definition.run(
-            temperature="10.0", field="1.0", mevents="10", magnet_device="TF"
+            start_temperature="1.0",
+            stop_temperature="1.0",
+            step_temperature="1.0",
+            start_field="17.0",
+            stop_field="17.0",
+            step_field="1",
+            custom="None",
+            mevents="10",
+            magnet_device="TF",
         )
         cget_mock.assert_called_once()
         inst.settemp.assert_called_once()
         inst.setmag.assert_called_once()
         inst.tf0.assert_called_once()
-        self.script_definition.begin_waitfor_mevents_end.assert_called_once()
+        self.check_mevents_mock.assert_called_once()
