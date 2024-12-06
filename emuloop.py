@@ -6,6 +6,8 @@ import numpy as np
 from genie_python import genie as g
 from genie_python.genie_script_generator import ScriptDefinition, cast_parameters_to
 
+from script_utilities import get_steps
+
 
 class SetDefinition(Enum):
     """
@@ -104,16 +106,7 @@ def inclusive_float_range_with_step_flip(start: float, stop: float, step: float)
       >>> inclusive_float_range_with_step_flip(0.5, 2, 0.5) == [0.5, 1, 1.5, 2]
       >>> inclusive_float_range_with_step_flip(2, 0.5, 0.5) == [2, 1.5, 1, 0.5]
     """
-    modulo = abs(stop - start) % abs(step)
-    if stop > start:
-        vstop = stop - modulo
-    else:
-        vstop = stop + modulo
-    for i in np.linspace(start, vstop, int(abs(vstop - start) / abs(step)) + 1):
-        if ((i >= start) and (i <= stop)) or (
-            (i >= stop) and (i <= start)
-        ):  # Check inserted here to ensure scan remains within defined range
-            yield i
+    yield from get_steps(start, step, stop)
 
 
 class DoRun(ScriptDefinition):
