@@ -37,7 +37,15 @@ def float_or_keep(temp_or_field):
 
 
 # The magnet devices shortened and longer forms
-magnet_devices = {"ZF": "Active ZF", "LF": "Danfysik", "TF": "T20 Coils"}
+magnet_devices = {
+    "LF": "Main LF",
+    "TFX": "TF X",
+    "TFY": "TF Y",
+    "LOW_Z": "Low Z",
+    "ZF": "Active ZF",
+    "SWEEP_Z": "Z sweep",
+}
+
 magnet_not_applicable = "N/A"
 
 
@@ -100,72 +108,35 @@ def inclusive_float_range_with_step_flip(start, stop, step):
     """
     if start > stop and step > 0:
         step = -step
-#    stop = stop + step **** This original code can cause the scan to extend beyond the given range
-    vstop = stop + step     # note 'arange' doesn't include last point
-# number of decimal places determined by required user entry
+    vstop = stop + step
     dec_places = max([len(str(start).split(".")[1]), len(str(stop).split(".")[1]), len(str(step).split(".")[1])])
     for i in np.arange(start, vstop, step):
         p = round(i,dec_places)
         if ((p >= start) and (p <= stop)) or ((p >= stop) and (p <= start)):    # Check inserted here to ensure scan remains within defined range
             yield p
-#    for i in np.arange(start, vstop, step):
-#        print(i)
-#        if ((i >= start) and (i <= stop)) or ((i >= stop) and (i <= start)):    # Check inserted here to ensure scan remains within defined range
-#            yield i
-
-def log_range(start, stop, n):
-    """
-    Do n fields between start and stop, logarithmically spaced.
-
-    Parameters:
-      start (float): the value to start the range from
-      stop (float): the value to stop the range at
-      step (float): the steps to take from start to stop
-
-    Returns:
-      The range from start to stop including all steps in between.
-
-    Examples:
-      >>> inclusive_float_range_with_step_flip(0.5, 2, 0.5) == [0.5, 1, 1.5, 2]
-      >>> inclusive_float_range_with_step_flip(2, 0.5, 0.5) == [2, 1.5, 1, 0.5]
-    """
-
-# number of decimal places determined by required user entry
-    dec_places = max([len(str(start).split(".")[1]), len(str(stop).split(".")[1])])
-    for i in range(0, n):
-        this_field = start + (stop-start) ** (i/(n*1.))
-        p = round(this_field, dec_places)
-        if ((p >= start) and (p <= stop)):    # Check inserted here to ensure scan remains within defined range
-            yield p
-#    for i in np.arange(start, vstop, step):
-#        print(i)
-#        if ((i >= start) and (i <= stop)) or ((i >= stop) and (i <= start)):    # Check inserted here to ensure scan remains within defined range
-#            yield i
 
 
 class DoRun(ScriptDefinition):
 
     active_zf = "Active ZF"
-    possible_magnet_devices = [active_zf, "Danfysik", "T20 Coils"]
     
     global_params_definition = OrderedDict({"Rate (Mev/hr)": ("110", int)})
     
 
     def get_help(self):
         return """
-This script logarithmically steps the field between start_field and stop_field.
 Magnet device must be one of {} or if the field is KEEP then it can be N/A.\n
-If the field is zero, active ZF will be engaged automatically.
+If the field is zero magnet device must be ZF.\n
 
         """.format(list(magnet_devices.keys()))
 
     @cast_parameters_to(
          start_temperature=float_or_keep, stop_temperature=float_or_keep, step_temperature=float,
-         start_field=float_or_keep, stop_field=float_or_keep, n_fields=int, 
+         start_field=float_or_keep, stop_field=float_or_keep, step_field=float, 
          custom=cast_custom_expression, mevents=float, magnet_device=magnet_device_type)	
     def estimate_time(self,
             start_temperature="keep", stop_temperature="keep", step_temperature=0,
-            start_field="keep", stop_field="keep", n_fields=1,
+            start_field="keep", stop_field="keep", step_field=0,
             custom="None", mevents=10, magnet_device="N/A"):
         # Scan if start and stop are different, set once if they are equal or do not set if they are None
         temp_set_definition = self.check_set_definition(start_temperature, stop_temperature)
@@ -177,7 +148,9 @@ If the field is zero, active ZF will be engaged automatically.
         else:
             temp_pts = 1
         if (field_set_definition == SetDefinition.SCAN):
-            field_pts = n_fields
+            field_pts = 0
+            for i in inclusive_float_range_with_step_flip(start_field, stop_field, step_field):
+                field_pts += 1
         else:
             field_pts = 1
         return (float(mevents) * float(temp_pts) * float(field_pts)) / (float(self.global_params["Rate (Mev/hr)"]) / 3600.0)
@@ -186,11 +159,11 @@ If the field is zero, active ZF will be engaged automatically.
     # Loop through a set of temperatures or fields using a start, stop and step mechanism0
     @cast_parameters_to(
          start_temperature=float_or_keep, stop_temperature=float_or_keep, step_temperature=float,
-         start_field=float_or_keep, stop_field=float_or_keep, n_fields=int, 
+         start_field=float_or_keep, stop_field=float_or_keep, step_field=float, 
          custom=cast_custom_expression, mevents=float, magnet_device=magnet_device_type)
     def run(self,
             start_temperature="keep", stop_temperature="keep", step_temperature=0,
-            start_field="keep", stop_field="keep", n_fields=1,
+            start_field="keep", stop_field="keep", step_field=0,
             custom="None", mevents=10, magnet_device="N/A"):
         # Scan if start and stop are different, set once if they are equal or do not set if they are None
         temp_set_definition = self.check_set_definition(start_temperature, stop_temperature)
@@ -198,8 +171,6 @@ If the field is zero, active ZF will be engaged automatically.
         # Use the instrument scripts to set the magnet device correctly
         import inst
         if field_set_definition != SetDefinition.UNDEFINED:
-            if start_field < 1e-3:
-                magnet_device = self.active_zf
             self.set_magnet_device(magnet_device, inst)
         # Execute a custom command - changed from 'eval' to 'exec' by spc 2/1/24
         exec(custom)
@@ -207,20 +178,16 @@ If the field is zero, active ZF will be engaged automatically.
         if temp_set_definition == SetDefinition.POINT:
             inst.settemp(start_temperature, wait=True)
         if field_set_definition == SetDefinition.POINT:
-            if start_field < 1e-3:
-                magnet_device = self.active_zf
-                inst.f0()
-            else:
-                inst.setmag(start_field, wait=True)
+            inst.setmag(start_field, wait=True)
         # If we are running scans do them
         if temp_set_definition == SetDefinition.SCAN and field_set_definition == SetDefinition.SCAN:
             # When we are running scans for both temperature and field do all combinations
             self.run_temp_and_field_scans(start_temperature, stop_temperature, step_temperature,
-                                          start_field, stop_field, n_fields, mevents, inst, magnet_device)
+                                          start_field, stop_field, step_field, mevents, inst)
         elif temp_set_definition == SetDefinition.SCAN:  # Run scans for the temperature
             self.run_scans(start_temperature, stop_temperature, step_temperature, mevents, inst.settemp)
         elif field_set_definition == SetDefinition.SCAN:  # Run scans for the field
-            self.run_field_scan(start_field, stop_field, n_fields, mevents, inst.setmag, magnet_device)
+            self.run_scans(start_field, stop_field, step_field, mevents, inst.setmag)
         else:
             # If we are not doing any scans do a run with temp and field as they are
             self.check_mevents_and_begin_waitfor_mevents_end(mevents)
@@ -245,7 +212,14 @@ If the field is zero, active ZF will be engaged automatically.
           magnet_device (str): The string representation of the magnet device to select.
           inst (module): The instrument scripts module to set the magnet device with.
         """
-        magnet_to_function_map = {"Active ZF": inst.f0, "Danfysik": inst.lf0, "T20 Coils": inst.tf0}
+        magnet_to_function_map = {
+            "Main LF": inst.lf0,
+            "TF X": inst.tfx,
+            "TF Y": inst.tfy,
+            "Low Z": inst.zfine,
+            "Active ZF": inst.f0,
+            "Z sweep": inst.zfine,
+        }
         if g.cget("a_selected_magnet")["value"] != magnet_device:
             magnet_to_function_map[magnet_device]()
 
@@ -271,7 +245,7 @@ If the field is zero, active ZF will be engaged automatically.
             return SetDefinition.SCAN
 
     def run_temp_and_field_scans(self, start_temperature, stop_temperature, step_temperature,
-                                 start_field, stop_field, n_fields, mevents, inst):
+                                 start_field, stop_field, step_field, mevents, inst):
         """
         Run scans for both the temperature and field.
 
@@ -281,15 +255,15 @@ If the field is zero, active ZF will be engaged automatically.
           step_temperature (float): The size of the steps to take to go from start_temperature to stop_temperature.
           start_field (float): The field to start the field scan with.
           stop_field (float): The field to end the field scan with (inclusive).
-          n_fields (int): Number of steps to take between start and stop field
+          step_field (float): The size of the steps to take to go from start_field to stop_field.
           mevents (float): The amount of millions of events to wait for in each run.
           inst (module): The instrument scripts module to set the temperature and field with.
         """
         for temp in inclusive_float_range_with_step_flip(start_temperature, stop_temperature, step_temperature):
             inst.settemp(temp, wait=True)
-            self.run_field_scan(start_field, stop_field, n_fields, mevents, inst.setmag)
+            self.run_scans(start_field, stop_field, step_field, mevents, inst.setmag)
 
-    def run_temp_scan(self, start, stop, step, mevents, set_parameter_func):
+    def run_scans(self, start, stop, step, mevents, set_parameter_func):
         """
         Run a scan for the given set_parameter_func
 
@@ -304,46 +278,21 @@ If the field is zero, active ZF will be engaged automatically.
             set_parameter_func(var, wait=True)
             self.check_mevents_and_begin_waitfor_mevents_end(mevents)
 
-    def run_field_scan(self, start, stop, n, mevents, set_parameter_func, magnet_device):
-        """
-        Run a log scan for the fields
-
-        Parameters:
-          start (float): The value to start the scan with.
-          stop (float): The value to end the scan with.
-          n (integer): Number of fields to scan
-          mevents (float): The amount of millions of events to wait for in each run.
-          set_parameter_func (function): A function to call to set the value with each step of the scan.
-        """
-        for var in log_range(start, stop, n):
-            if var < 1e-3:
-                # engage ZF automatically if a field < 1mG requested
-                print('ZF enganged')
-                self.set_magnet_device(self.active_zf)
-            else:
-                set_parameter_func(var, wait=True)
-            self.check_mevents_and_begin_waitfor_mevents_end(mevents)
-            if var < 1e-3:
-                # put the field back on if in ZF mode
-                self.set_magnet_device(magnet_device)
-            
-
-
     # Check to see if the provided parameters are valid
     @cast_parameters_to(
          start_temperature=float_or_keep, stop_temperature=float_or_keep, step_temperature=float,
-         start_field=float_or_keep, stop_field=float_or_keep, n_fields=int, 
+         start_field=float_or_keep, stop_field=float_or_keep, step_field=float, 
          custom=cast_custom_expression, mevents=float, magnet_device=magnet_device_type)
     def parameters_valid(self,
                          start_temperature=1.0, stop_temperature=1.0, step_temperature=1.0,
-                         start_field=1.0, stop_field=1.0, n_fields=1,
+                         start_field=1.0, stop_field=1.0, step_field=1.0,
                          custom="None",  mevents=10, magnet_device="N/A"):
         # The reason as to why the parameters are not valid
         reason = ""
         reason += self.check_start_and_stop_valid(start_temperature, stop_temperature, "temperature")
         reason += self.check_start_and_stop_valid(start_field, stop_field, "field")
         reason += self.check_step_set_correctly(start_temperature, stop_temperature, step_temperature, "temperature")
-        reason += self.check_step_set_correctly(start_field, stop_field, n_fields, "field")
+        reason += self.check_step_set_correctly(start_field, stop_field, step_field, "field")
         reason += self.check_magnet_selected_correctly(start_field, stop_field, magnet_device)
         reason += self.check_if_start_or_stop_field_are_keep_then_magnet_is_na(start_field, stop_field, magnet_device)
         # If there is no reason return None i.e. the parameters are valid
@@ -432,6 +381,10 @@ If the field is zero, active ZF will be engaged automatically.
             if magnet_device not in magnet_devices.values():
                 reason += "Field set but magnet devices {} not in possible devices {}\n".format(
                     magnet_device, list(magnet_devices.keys()))
+            # Only the zero field can set a field of zero
+            if (np.isclose(start_field, 0.0) or np.isclose(stop_field, 0.0)) and magnet_device != self.active_zf:
+                reason += "Trying to set a zero field without using the active zero field ({}, {})\n".format(
+                    magnet_device, self.active_zf)
             if (not np.isclose(start_field, 0.0) or not np.isclose(stop_field,
                                                                    0.0)) and magnet_device == self.active_zf:
                 reason += "Cannot set a non-zero field with the active zero field\n"
